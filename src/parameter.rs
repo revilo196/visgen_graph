@@ -12,8 +12,8 @@ use std::collections::BTreeMap;
 /// private struct that stores:
 ///   * **value**: current value(s) of the parameter
 ///   * **address**: full osc-address of the parameter
-//
-// similar to [Message]
+///
+/// similar to [Message]
 #[derive(Clone, Debug)]
 struct Parameter {
     values: Vec<Type>,
@@ -53,7 +53,7 @@ impl ParameterStore {
         }
     }
 
-    ///
+    
     /// register a new Parameter in the store
     ///
     /// * [Parameter] is moved inside the store
