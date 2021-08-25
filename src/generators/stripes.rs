@@ -61,7 +61,7 @@ impl ModelUpdate for StripeGenerator {
 
         } 
 
-    
+        
         draw
     }
 }
