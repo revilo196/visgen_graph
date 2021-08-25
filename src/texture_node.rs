@@ -1,4 +1,4 @@
-use crate::{TextureNode, TextureTarget};
+use crate::{TextureNode, TextureTarget, ParameterStore};
 use nannou::wgpu::{Device, TextureView};
 use nannou::window::Window;
 use nannou::{App, Draw};
@@ -9,7 +9,7 @@ use nannou::{App, Draw};
 /// This is used to easily implement different TextureNodes
 ///
 pub trait ModelUpdate {
-    fn update_model(&mut self, app: &App, input: Vec<TextureView>) -> Draw;
+    fn update_model(&mut self, app: &App, store: &ParameterStore, input: Vec<TextureView>) -> Draw;
 }
 
 pub struct TextureModelNode<T> {
@@ -22,8 +22,8 @@ where
     T: ModelUpdate,
 {
     //input can't be cloned/copied in final version
-    fn update(&mut self, app: &App, window: &Window, input: Vec<TextureView>) {
-        let draw = self.model.update_model(app, input);
+    fn update(&mut self, app: &App, window: &Window,store: &ParameterStore ,input: Vec<TextureView>) {
+        let draw = self.model.update_model(app, store,input);
         self.texture.submit(window, &draw);
     }
 

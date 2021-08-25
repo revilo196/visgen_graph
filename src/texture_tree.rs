@@ -1,3 +1,4 @@
+use crate::ParameterStore;
 use indextree::{Arena, NodeId};
 use nannou::wgpu::TextureView;
 use nannou::window::Window;
@@ -10,7 +11,7 @@ use nannou::App;
 /// This can be part of [TextureTree]
 ///
 pub trait TextureNode {
-    fn update(&mut self, app: &App, dev: &Window, input: Vec<TextureView>);
+    fn update(&mut self, app: &App, dev: &Window,store: &ParameterStore, input: Vec<TextureView>);
     fn output(&self) -> TextureView;
 }
 
@@ -43,7 +44,7 @@ impl TextureTree {
     /// run the tree
     ///
     /// updates all [TextureNode]s inside the tree, beginning with the leaf, ending at the Root
-    pub fn update(&mut self, app: &App, win: &Window) {
+    pub fn update(&mut self, app: &App, win: &Window, store: &ParameterStore) {
         //this order of update guaranies that all children are updated before its children
         for &n_id in self.node_stack.iter().rev() {
             // collect updated children when available
@@ -57,7 +58,7 @@ impl TextureTree {
             let node = { self.arena.get_mut(n_id).unwrap().get_mut() };
 
             // update the node
-            node.update(app, win, children_outputs);
+            node.update(app, win, store,children_outputs);
         }
     }
 

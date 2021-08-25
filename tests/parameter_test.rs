@@ -2,6 +2,7 @@ use nannou_osc::{Message, Type};
 use visgen_graph::{
     ParameterEnd, ParameterEndpoint, ParameterFactory, ParameterHandle, ParameterStore,
 };
+
 #[test]
 fn test_integration_parameters() {
     let mut store = ParameterStore::new();

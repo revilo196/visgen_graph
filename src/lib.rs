@@ -15,3 +15,5 @@ mod generators {
     pub mod stripes;
     pub mod fullscreen_fragment;
 }
+
+pub use generators::stripes::*;
