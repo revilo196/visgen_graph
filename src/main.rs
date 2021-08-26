@@ -2,8 +2,8 @@ use indextree::Arena;
 use nannou::color::blend::Parameter;
 use nannou::prelude::*;
 use nannou::wgpu::{Device, TextureView};
-use visgen_graph::{TextureNode, ParameterStore, TextureTree};
-use visgen_graph::{TextureModelNode,StripeGenerator};
+use visgen_graph::{FragmentNode, StripeGenerator, TextureModelNode};
+use visgen_graph::{ParameterStore, TextureNode, TextureTree, FULL_SCREEN_QUAD};
 
 struct Model {
     tree: TextureTree,
@@ -32,7 +32,7 @@ fn model(app: &App) -> Model {
     let window = app.window(w_id).unwrap();
 
     let tree = build_tree(&window, texture_size, &mut store);
-    Model { tree,store }
+    Model { tree, store }
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
@@ -42,6 +42,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
+    frame.clear(BLACK);
 
     draw.texture(&model.tree.output());
 
@@ -58,9 +59,17 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     let mut arena: Arena<Box<dyn TextureNode>> = Arena::new();
 
     // Add some new nodes to the arena
-    let stripe = StripeGenerator::new("Stripes".to_string(), size, store);
-    let a = arena.new_node(Box::new(TextureModelNode::new(stripe,device,size)));
-   /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
+    //let stripe = StripeGenerator::new("Stripes".to_string(), size, store);
+    //let a = arena.new_node(Box::new(TextureModelNode::new(stripe,device,size)));
+
+    let a = arena.new_node(Box::new(FragmentNode::new(
+        device,
+        size,
+        include_bytes!("shaders/vert.spv"),
+        include_bytes!("shaders/frag.spv"),
+        &FULL_SCREEN_QUAD,
+    )));
+    /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
     let c = arena.new_node(Box::new(NodeModel::new(30, device, size)));
     let d = arena.new_node(Box::new(NodeModel::new(40, device, size)));
     let e = arena.new_node(Box::new(NodeModel::new(50, device, size)));
@@ -73,7 +82,7 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     //        b     c
     //       d e    f
     //             g h
-   /*  a.append(b, &mut arena);
+    /*  a.append(b, &mut arena);
     a.append(c, &mut arena);
     b.append(d, &mut arena);
     b.append(e, &mut arena);

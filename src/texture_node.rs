@@ -1,4 +1,4 @@
-use crate::{TextureNode, TextureTarget, ParameterStore};
+use crate::{ParameterStore, TextureNode, TextureTarget};
 use nannou::wgpu::{Device, TextureView};
 use nannou::window::Window;
 use nannou::{App, Draw};
@@ -22,8 +22,14 @@ where
     T: ModelUpdate,
 {
     //input can't be cloned/copied in final version
-    fn update(&mut self, app: &App, window: &Window,store: &ParameterStore ,input: Vec<TextureView>) {
-        let draw = self.model.update_model(app, store,input);
+    fn update(
+        &mut self,
+        app: &App,
+        window: &Window,
+        store: &ParameterStore,
+        input: Vec<TextureView>,
+    ) {
+        let draw = self.model.update_model(app, store, input);
         self.texture.submit(window, &draw);
     }
 

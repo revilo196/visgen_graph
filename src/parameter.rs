@@ -53,7 +53,6 @@ impl ParameterStore {
         }
     }
 
-    
     /// register a new Parameter in the store
     ///
     /// * [Parameter] is moved inside the store

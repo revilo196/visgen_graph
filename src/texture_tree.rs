@@ -11,7 +11,7 @@ use nannou::App;
 /// This can be part of [TextureTree]
 ///
 pub trait TextureNode {
-    fn update(&mut self, app: &App, dev: &Window,store: &ParameterStore, input: Vec<TextureView>);
+    fn update(&mut self, app: &App, dev: &Window, store: &ParameterStore, input: Vec<TextureView>);
     fn output(&self) -> TextureView;
 }
 
@@ -58,7 +58,7 @@ impl TextureTree {
             let node = { self.arena.get_mut(n_id).unwrap().get_mut() };
 
             // update the node
-            node.update(app, win, store,children_outputs);
+            node.update(app, win, store, children_outputs);
         }
     }
 

@@ -6,13 +6,13 @@
 #version 450
 
 layout(location = 0) in vec2 position;
-layout(location = 1) out vec2 f_pos;
+layout(location = 1) out vec2 v_pos;
 
 
 layout(set = 0, binding = 0) uniform Data {
-    mat3 world;
     vec4 color;
     float time;
+    mat4 trans;
     float p1;
     float p2;
     float p3;
@@ -21,7 +21,13 @@ layout(set = 0, binding = 0) uniform Data {
     float p6;
 } uniforms;
 
+
+
+
 void main() {
-    f_pos = position;
-    gl_Position = vec4(position, 0.0, 1.0);
+    vec3 pos = (uniforms.trans*vec4(position,1.0,1.0)).xyz;
+    vec4 color = uniforms.color;
+    float time = uniforms.time;
+    v_pos = pos.xy;
+    gl_Position = vec4(pos.x,pos.y, 0.0, 1.0);
 }

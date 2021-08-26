@@ -52,22 +52,22 @@ fn model(app: &App) -> Model {
     let window = app.window(w_id).unwrap();
     let device = window.swap_chain_device();
     let format = Frame::TEXTURE_FORMAT;
-    let texture_size = [512,512];
+    let texture_size = [512, 512];
     // Load shader modules.
     let vs_mod = wgpu::shader_from_spirv_bytes(device, include_bytes!("shaders/vert.spv"));
     let fs_mod = wgpu::shader_from_spirv_bytes(device, include_bytes!("shaders/frag.spv"));
 
     // Frame Texture
     let texture = TextureBuilder::new()
-    .size(texture_size)
-    // Our texture will be used as the RENDER_ATTACHMENT for our `Draw` render pass.
-    // It will also be SAMPLED by the `TextureCapturer` and `TextureResizer`.
-    .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
-    // Use nannou's default multisampling sample count
-    .sample_count(1)
-    .format(format)
-    // Build it!
-    .build(device);
+        .size(texture_size)
+        // Our texture will be used as the RENDER_ATTACHMENT for our `Draw` render pass.
+        // It will also be SAMPLED by the `TextureCapturer` and `TextureResizer`.
+        .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
+        // Use nannou's default multisampling sample count
+        .sample_count(1)
+        .format(format)
+        // Build it!
+        .build(device);
 
     // Create the vertex buffer.
     let vertices_bytes = vertices_as_bytes(&VERTICES[..]);
@@ -101,33 +101,39 @@ fn model(app: &App) -> Model {
 // Draw the state of your `Model` into the given Self.texture here.
 fn update(app: &App, model: &mut Model, _update: Update) {
     // Using this we will encode commands that will be submitted to the GPU.
-    let desc = CommandEncoderDescriptor{ label: Some("Texture")};
-    let mut encoder = app.main_window().swap_chain_device().create_command_encoder(&desc);
+    let desc = CommandEncoderDescriptor {
+        label: Some("Texture"),
+    };
+    let mut encoder = app
+        .main_window()
+        .swap_chain_device()
+        .create_command_encoder(&desc);
     let texture_view = model.texture.view().build();
     // The render pass can be thought of a single large command consisting of sub commands. Here we
     // begin a render pass that outputs to the frame's texture. Then we add sub-commands for
     // setting the bind group, render pipeline, vertex buffers and then finally drawing.
     {
-    let mut render_pass = wgpu::RenderPassBuilder::new()
-        .color_attachment(&texture_view, |color| color)
-        .begin(&mut encoder);
-    render_pass.set_bind_group(0, &model.bind_group, &[]);
-    render_pass.set_pipeline(&model.render_pipeline);
-    render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
+        let mut render_pass = wgpu::RenderPassBuilder::new()
+            .color_attachment(&texture_view, |color| color)
+            .begin(&mut encoder);
+        render_pass.set_bind_group(0, &model.bind_group, &[]);
+        render_pass.set_pipeline(&model.render_pipeline);
+        render_pass.set_vertex_buffer(0, model.vertex_buffer.slice(..));
 
-    // We want to draw the whole range of vertices, and we're only drawing one instance of them.
-    let vertex_range = 0..VERTICES.len() as u32;
-    let instance_range = 0..1;
-    render_pass.draw(vertex_range, instance_range);
+        // We want to draw the whole range of vertices, and we're only drawing one instance of them.
+        let vertex_range = 0..VERTICES.len() as u32;
+        let instance_range = 0..1;
+        render_pass.draw(vertex_range, instance_range);
     }
     // Now we're done! The commands we added will be submitted after `view` completes.
-    app.main_window().swap_chain_queue().submit(Some(encoder.finish()));
+    app.main_window()
+        .swap_chain_queue()
+        .submit(Some(encoder.finish()));
 }
-
 
 fn view(_app: &App, model: &Model, frame: Frame) {
     let draw = _app.draw();
-    
+
     draw.texture(&model.texture.view().build());
     draw.quad().w_h(10.0, 10.0);
     draw.to_frame(_app, &frame).unwrap();
