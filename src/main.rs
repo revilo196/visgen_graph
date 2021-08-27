@@ -1,9 +1,8 @@
 use indextree::Arena;
-use nannou::color::blend::Parameter;
 use nannou::prelude::*;
-use nannou::wgpu::{Device, TextureView};
-use visgen_graph::{FragmentNode, StripeGenerator, TextureModelNode};
+use visgen_graph::{Shader2DNode};
 use visgen_graph::{ParameterStore, TextureNode, TextureTree, FULL_SCREEN_QUAD};
+use visgen_graph::generators::wave::WaveTextureNode;
 
 struct Model {
     tree: TextureTree,
@@ -62,13 +61,14 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     //let stripe = StripeGenerator::new("Stripes".to_string(), size, store);
     //let a = arena.new_node(Box::new(TextureModelNode::new(stripe,device,size)));
 
-    let a = arena.new_node(Box::new(FragmentNode::new(
+    /*let a = arena.new_node(Box::new(Shader2DNode::new(
         device,
         size,
         include_bytes!("shaders/vert.spv"),
         include_bytes!("shaders/frag.spv"),
         &FULL_SCREEN_QUAD,
-    )));
+    )));*/
+    let a = arena.new_node(Box::new(WaveTextureNode::new("wave".to_string(), size, store, device)));
     /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
     let c = arena.new_node(Box::new(NodeModel::new(30, device, size)));
     let d = arena.new_node(Box::new(NodeModel::new(40, device, size)));

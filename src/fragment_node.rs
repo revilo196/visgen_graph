@@ -1,14 +1,10 @@
-use std::num::NonZeroU32;
-
 use crate::{ParameterStore, TextureNode};
 use nannou::prelude::*;
 use nannou::wgpu::{
     CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage, TextureView,
 };
-use ::wgpu::TextureAspect;
-use wgpu_types::ImageSubresourceRange;
 
-pub struct FragmentNode {
+pub struct Shader2DNode {
     bind_group: wgpu::BindGroup,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
@@ -54,7 +50,7 @@ pub struct Uniforms2D {
     p6: f32,
 }
 
-impl FragmentNode {
+impl Shader2DNode {
     pub fn new(
         device: &Device,
         texture_size: [u32; 2],
@@ -132,7 +128,7 @@ impl FragmentNode {
     }
 }
 
-impl TextureNode for FragmentNode {
+impl TextureNode for Shader2DNode {
     fn update(
         &mut self,
         app: &App,
@@ -171,7 +167,7 @@ impl TextureNode for FragmentNode {
         );
 
         
-        println!("{},{},{}, {:?}", app.time, uniforms_size ,window.swap_chain_device().features().contains( wgpu::Features::CLEAR_COMMANDS) ,uniforms_bytes);
+        //println!("{},{},{}, {:?}", app.time, uniforms_size ,window.swap_chain_device().features().contains( wgpu::Features::CLEAR_COMMANDS) ,uniforms_bytes);
 
 
 
