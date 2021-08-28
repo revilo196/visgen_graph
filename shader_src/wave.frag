@@ -21,5 +21,24 @@ void main() {
     vec4 color = uniforms.color;
     float time = uniforms.time;
     float freq = uniforms.freq;
-    f_color =  color * (sin(v_pos.x * freq * 20.14  + time ) + 1.0)/2.0;
+    float angle = uniforms.angle;
+
+    float phase = (v_pos.x * sin(angle) + v_pos.y * cos(angle)) * freq * 20.14  + time;
+    float intensity =  (sin( phase ) + 1.0)/2.0;
+
+    //duty
+    intensity = pow(intensity, 6);
+    
+    intensity = (intensity*2)-1;
+
+    //hardniss
+    intensity = sin(intensity * 5 / 3.14);
+    intensity = sin(intensity * 5 / 3.14);
+    intensity = sin(intensity * 5 / 3.14);
+    intensity = sin(intensity * 5 / 3.14);
+
+    intensity = (intensity+1)/2; 
+
+
+    f_color =  color * intensity;
 }
