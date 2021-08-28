@@ -65,7 +65,7 @@ impl Shader2DNode {
         // Frame Texture
         let texture = TextureBuilder::new()
             .size(texture_size)
-            .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED )
+            .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
             .sample_count(1)
             .format(format)
             .build(device);
@@ -143,8 +143,6 @@ impl TextureNode for Shader2DNode {
         let mut encoder = window.swap_chain_device().create_command_encoder(&desc);
         let texture_view = self.texture.view().build();
 
-        
-
         //update uniforms
         self.uniforms.time = app.time;
         let uniforms_size = std::mem::size_of::<Uniforms2D>() as wgpu::BufferAddress;
@@ -166,10 +164,7 @@ impl TextureNode for Shader2DNode {
             uniforms_size,
         );
 
-        
         //println!("{},{},{}, {:?}", app.time, uniforms_size ,window.swap_chain_device().features().contains( wgpu::Features::CLEAR_COMMANDS) ,uniforms_bytes);
-
-
 
         // The render pass can be thought of a single large command consisting of sub commands. Here we
         // begin a render pass that outputs to the frame's texture. Then we add sub-commands for
@@ -191,8 +186,8 @@ impl TextureNode for Shader2DNode {
 
         // Now we're done! The commands we added will be submitted after `view` completes.
         window.swap_chain_queue().submit(Some(encoder.finish()));
-        
-      /*   {
+
+        /*   {
             let mut clear_encoder = window.swap_chain_device().create_command_encoder(&desc);
             window.swap_chain_queue().submit(Some(clear_encoder.finish()));
         } */

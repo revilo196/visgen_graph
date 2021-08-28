@@ -1,8 +1,8 @@
-
 use crate::Vertex2D;
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoderDescriptor, CommandEncoder, Device, Texture, TextureBuilder, TextureUsage, TextureView,
+    CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage,
+    TextureView,
 };
 
 pub struct Shader2DTarget<T> {
@@ -12,31 +12,37 @@ pub struct Shader2DTarget<T> {
     index_buffer: wgpu::Buffer,
     uniform_buffer: wgpu::Buffer,
     texture: Texture,
-    uniforms : T,
+    uniforms: T,
     encoder: Option<CommandEncoder>,
-    vertex_len : usize,
+    vertex_len: usize,
     index_len: usize,
 }
 
-impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
-    pub fn new(device: &Device,
+impl<T> Shader2DTarget<T>
+where
+    T: Copy,
+    T: Clone,
+{
+    pub fn new(
+        device: &Device,
         texture_size: [u32; 2],
         vert: &[u8],
         frag: &[u8],
         vertecies: &[Vertex2D],
         indecies: &[u16],
-        uniform: T) -> Self{
+        uniform: T,
+    ) -> Self {
         let format = Frame::TEXTURE_FORMAT;
         let vs_mod = wgpu::shader_from_spirv_bytes(device, vert);
         let fs_mod = wgpu::shader_from_spirv_bytes(device, frag);
 
         // Frame Texture
         let texture = TextureBuilder::new()
-        .size(texture_size)
-        .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED )
-        .sample_count(1)
-        .format(format)
-        .build(device);
+            .size(texture_size)
+            .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
+            .sample_count(1)
+            .format(format)
+            .build(device);
 
         let vertices_bytes = vertices_as_bytes(&vertecies[..]);
         let usage = wgpu::BufferUsage::VERTEX;
@@ -81,7 +87,6 @@ impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
             .primitive_topology(wgpu::PrimitiveTopology::TriangleStrip)
             .build(device);
 
-
         Self {
             bind_group,
             vertex_buffer,
@@ -94,30 +99,27 @@ impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
             vertex_len: vertecies.len(),
             index_len: indecies.len(),
         }
-
     }
     pub fn begin(&mut self, device: &Device) {
         let desc = CommandEncoderDescriptor {
-            label: Some("Shader2DTarget"), 
+            label: Some("Shader2DTarget"),
         };
         self.encoder = Some(device.create_command_encoder(&desc));
     }
 
-    // change the uniforms_buffer 
+    // change the uniforms_buffer
     // must be placed between begin & submit to take effect
-    pub fn set_uniforms(&mut self,device: &Device, uniform: T) {
+    pub fn set_uniforms(&mut self, device: &Device, uniform: T) {
         self.uniforms = uniform;
         if let Some(encoder) = self.encoder.as_mut() {
             let uniforms_size = std::mem::size_of::<T>() as wgpu::BufferAddress;
             let uniforms_bytes = uniforms_as_bytes(&self.uniforms);
             let usage = wgpu::BufferUsage::COPY_SRC;
-            let new_uniform_buffer =
-                device
-                    .create_buffer_init(&BufferInitDescriptor {
-                        label: None,
-                        contents: uniforms_bytes,
-                        usage,
-                    });
+            let new_uniform_buffer = device.create_buffer_init(&BufferInitDescriptor {
+                label: None,
+                contents: uniforms_bytes,
+                usage,
+            });
             encoder.copy_buffer_to_buffer(
                 &new_uniform_buffer,
                 0,
@@ -128,9 +130,9 @@ impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
         }
     }
 
-    // change the mesh 
+    // change the mesh
     // must be placed between begin & submit to take effect
-    pub fn set_mesh(&mut self, vertecies: &[Vertex2D],  indecies: &[u16]){
+    pub fn set_mesh(&mut self, vertecies: &[Vertex2D], indecies: &[u16]) {
         if let Some(encoder) = self.encoder.as_mut() {
             todo!();
         }
@@ -138,9 +140,8 @@ impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
 
     pub fn render_pass(&mut self) {
         if let Some(encoder) = self.encoder.as_mut() {
-
-        let texture_view = self.texture.view().build();
-        let mut render_pass = wgpu::RenderPassBuilder::new()
+            let texture_view = self.texture.view().build();
+            let mut render_pass = wgpu::RenderPassBuilder::new()
                 .color_attachment(&texture_view, |color| color)
                 .begin(encoder);
             render_pass.set_bind_group(0, &self.bind_group, &[]);
@@ -151,7 +152,6 @@ impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
             let vertex_range = 0..self.vertex_len as u32;
             let instance_range = 0..1;
             render_pass.draw(vertex_range, instance_range);
-
         }
     }
 
@@ -162,12 +162,11 @@ impl<T> Shader2DTarget<T> where T : Copy, T: Clone {
         if let Some(encoder) = encoder {
             window.swap_chain_queue().submit(Some(encoder.finish()));
         }
-    }   
+    }
 
     pub fn texture_view(&self) -> TextureView {
         self.texture.view().build()
     }
-    
 }
 
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.
@@ -178,6 +177,9 @@ fn vertices_as_bytes(data: &[Vertex2D]) -> &[u8] {
 fn indecies_as_bytes(data: &[u16]) -> &[u8] {
     unsafe { wgpu::bytes::from_slice(data) }
 }
-fn uniforms_as_bytes<T>(uniforms: &T) -> &[u8] where T : Copy {
+fn uniforms_as_bytes<T>(uniforms: &T) -> &[u8]
+where
+    T: Copy,
+{
     unsafe { wgpu::bytes::from(uniforms) }
 }

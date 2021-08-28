@@ -1,4 +1,3 @@
-
 use nannou::prelude::*;
 use visgen_graph::shader2d_target::*;
 use visgen_graph::shapes2d::FULL_SCREEN_QUAD;
@@ -6,7 +5,6 @@ use visgen_graph::shapes2d::FULL_SCREEN_QUAD;
 fn main() {
     nannou::app(model).update(update).run();
 }
-
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -16,11 +14,11 @@ struct ExampleUniform {
     trans: Mat4,
 }
 
-struct Model { 
-    target : Shader2DTarget<ExampleUniform>,
+struct Model {
+    target: Shader2DTarget<ExampleUniform>,
 }
 
-fn model(app: &App) -> Model { 
+fn model(app: &App) -> Model {
     let w_id = app.new_window().size(512, 512).view(view).build().unwrap();
 
     // The gpu device associated with the window's swapchain
@@ -29,23 +27,36 @@ fn model(app: &App) -> Model {
     let texture_size = [512, 512];
     let vert = include_bytes!("shaders/vert.spv");
     let frag = include_bytes!("shaders/frag.spv");
-    let uniform = ExampleUniform { time: app.time, color: [1.0,0.8,0.7,1.0], trans: Mat4::IDENTITY };
-    let target = Shader2DTarget::new(device, texture_size, vert, frag, &FULL_SCREEN_QUAD, &[], uniform);
+    let uniform = ExampleUniform {
+        time: app.time,
+        color: [1.0, 0.8, 0.7, 1.0],
+        trans: Mat4::IDENTITY,
+    };
+    let target = Shader2DTarget::new(
+        device,
+        texture_size,
+        vert,
+        frag,
+        &FULL_SCREEN_QUAD,
+        &[],
+        uniform,
+    );
 
-    Model {
-        target
-    }
+    Model { target }
 }
 
-fn update(app: &App, model: &mut Model, _update: Update) { 
-    let uniform = ExampleUniform { time: app.time, color: [1.0,0.5,0.25,1.0], trans: Mat4::IDENTITY};
+fn update(app: &App, model: &mut Model, _update: Update) {
+    let uniform = ExampleUniform {
+        time: app.time,
+        color: [1.0, 0.5, 0.25, 1.0],
+        trans: Mat4::IDENTITY,
+    };
     let window = app.main_window();
     let device = window.swap_chain_device();
     model.target.begin(device);
     model.target.set_uniforms(device, uniform);
     model.target.render_pass();
     model.target.end(&window);
-
 }
 
 fn view(_app: &App, model: &Model, frame: Frame) {

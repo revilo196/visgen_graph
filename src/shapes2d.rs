@@ -1,5 +1,3 @@
-
-
 pub const FULL_SCREEN_QUAD: [Vertex2D; 4] = [
     Vertex2D {
         position: [-1.0, 1.0],
@@ -15,10 +13,7 @@ pub const FULL_SCREEN_QUAD: [Vertex2D; 4] = [
     },
 ];
 
-pub const FULL_SCREEN_QUAD_INDEX: [u16; 6] = [
-    1 , 2, 3,
-    4 , 3 , 2
-];
+pub const FULL_SCREEN_QUAD_INDEX: [u16; 6] = [1, 2, 3, 4, 3, 2];
 
 pub const FULL_TRI: [Vertex2D; 3] = [
     Vertex2D {
@@ -29,13 +24,10 @@ pub const FULL_TRI: [Vertex2D; 3] = [
     },
     Vertex2D {
         position: [1.0, 1.0],
-    }
+    },
 ];
 
-pub const FULL_TRI_INDEX: [u16; 3] = [
-    1 , 2, 3,
-];
-
+pub const FULL_TRI_INDEX: [u16; 3] = [1, 2, 3];
 
 #[repr(C)]
 #[derive(Clone, Copy)]

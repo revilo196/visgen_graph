@@ -5,6 +5,8 @@ use crate::TextureNode;
 use crate::ParameterEndpoint;
 use crate::shader2d_target::Shader2DTarget;
 use crate::shapes2d::{FULL_SCREEN_QUAD,FULL_SCREEN_QUAD_INDEX};
+use crate::util::shader::read_shader_file;
+use nannou::image::EncodableLayout;
 use nannou::wgpu::Device;
 
 
@@ -27,8 +29,8 @@ pub struct WaveTextureNode {
 
 impl WaveTextureNode {
     pub fn new(name: String,texture_size : [u32;2], store : &mut ParameterStore,  device: &Device) -> Self {
-        let vert = include_bytes!("../shaders/minimal2d_vert.spv");
-        let frag = include_bytes!("../shaders/wave_frag.spv");
+        let vert = read_shader_file("shader/minimal2d_vert.spv");
+        let frag = read_shader_file("shader/wave_frag.spv");
         let uniform = UniformsWave { color:[1.0,1.0,1.0,1.0], time:0.0, freq: 1.0, hard: 1.0, duty:0.5, angle:0.5 };
 
         let mut factory = ParameterFactory::new(name, store);
@@ -41,7 +43,7 @@ impl WaveTextureNode {
         ];
 
         let target = Shader2DTarget::new(device, texture_size,
-             vert, frag, &FULL_SCREEN_QUAD, &FULL_SCREEN_QUAD_INDEX, uniform); 
+             vert.as_bytes(), frag.as_bytes(), &FULL_SCREEN_QUAD, &FULL_SCREEN_QUAD_INDEX, uniform); 
         Self {
             param,
             color,
