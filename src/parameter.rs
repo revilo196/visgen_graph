@@ -7,7 +7,7 @@ use crate::osc_convert::FromOscType;
 /// Parameter are stored in an central [ParameterStore]
 ///
 use nannou_osc::{Message, Type};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt::Debug};
 
 /// private struct that stores:
 ///   * **value**: current value(s) of the parameter
@@ -38,7 +38,7 @@ type ParameterIndex = usize;
 /// Paths are an [BTreeMap], this maps Paths to an Index into the Vec.
 ///
 /// [Parameter]s get added when creating new [ParameterEndpoint]s or using the [ParameterFactory]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ParameterStore {
     parameters: Vec<Parameter>,
     paths: BTreeMap<String, ParameterIndex>,
@@ -100,6 +100,7 @@ impl ParameterStore {
         }
     }
 }
+
 
 pub trait ParameterEnd<T> {
     fn len(&self) -> usize;
@@ -198,7 +199,7 @@ pub struct ParameterFactory<'a> {
 
 impl<'a> ParameterFactory<'a> {
     pub fn new(path: String, store: &'a mut ParameterStore) -> Self {
-        Self { path, store }
+        Self { path: format!("/{}",path), store }
     }
 
     /// Build a new ParameterEndpoint using [Default] trait
