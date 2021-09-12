@@ -2,8 +2,10 @@ use indextree::Arena;
 use nannou::prelude::*;
 use visgen_graph::generators::wave::WaveTextureNode;
 use visgen_graph::{ParameterStore, TextureNode, TextureTree};
+use nannou_osc as osc;
 
 struct Model {
+    receiver: osc::Receiver,
     tree: TextureTree,
     store: ParameterStore,
 }
@@ -13,6 +15,8 @@ fn main() {
         .update(update) // rather than `.event(event)`, now we only subscribe to updates
         .run();
 }
+
+const PORT: u16 = 6060;
 
 fn model(app: &App) -> Model {
     let texture_size = [512, 512];
@@ -30,10 +34,23 @@ fn model(app: &App) -> Model {
     let window = app.window(w_id).unwrap();
 
     let tree = build_tree(&window, texture_size, &mut store);
-    Model { tree, store }
+    
+    println!("{:?}", store);
+
+    let receiver : osc::Receiver = osc::receiver(PORT).unwrap();
+
+    Model { tree, store,receiver }
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
+
+    for (packet, _) in model.receiver.try_iter() {
+        if let osc::Packet::Message(message) = packet {
+            model.store.update(&message);
+            println!("{:?}", message);
+        }
+    }
+
     let win = app.main_window();
     model.tree.update(app, &win, &model.store);
 }
