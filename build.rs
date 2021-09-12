@@ -48,6 +48,8 @@ fn build_shader(input: &Path,  out_path: &Path) -> Result<(), Box<dyn Error>> {
     let output_path = out_path.join(output_name);
     let out = Command::new(&"glslc")
         .arg(input.as_os_str())
+        .arg("-I")
+        .arg("shader_src/include") //include folder
         .arg("-o")
         .arg(output_path.as_os_str())
         .output()
