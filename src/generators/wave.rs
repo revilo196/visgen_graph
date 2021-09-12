@@ -19,27 +19,34 @@ struct UniformsWave {
     hard: f32,
     duty: f32,
     angle: f32,
+    noise_amp: f32,
+    noise_scale: f32,
+    noise_speed: f32,
 } 
 
 pub struct WaveTextureNode {
     target : Shader2DTarget<UniformsWave>,
     color: ParameterEndpoint<f32>,
-    param: [ParameterEndpoint<f32> ;4],
+    param: [ParameterEndpoint<f32> ;7],
 }
 
 impl WaveTextureNode {
     pub fn new(name: String,texture_size : [u32;2], store : &mut ParameterStore,  device: &Device) -> Self {
         let vert = read_shader_file("shader/minimal2d_vert.spv");
         let frag = read_shader_file("shader/wave_frag.spv");
-        let uniform = UniformsWave { color:[1.0,1.0,1.0,1.0], time:0.0, freq: 1.0, hard: 1.0, duty:0.5, angle:0.5 };
+        let uniform = UniformsWave { color:[1.0,1.0,1.0,1.0], time:0.0, freq: 1.0, hard: 1.0, duty:0.5, angle:0.5 , noise_amp:0.0, noise_scale:0.0, noise_speed:1.0 };
 
         let mut factory = ParameterFactory::new(name, store);
         let color = factory.build_array_default(1.0, 4, "color".to_string());
         let param = [
-            factory.build_default(1.0, "freq".to_string()),
-            factory.build_default(1.0, "hard".to_string()),
-            factory.build_default(0.5, "duty".to_string()),
+            factory.build_default(3.0, "freq".to_string()),
+            factory.build_default(0.0, "hard".to_string()),
+            factory.build_default(2.0, "duty".to_string()),
             factory.build_default(1.0, "angle".to_string()),
+            factory.build_default(30.0, "noise_amp".to_string()),
+            factory.build_default(1.5, "noise_scale".to_string()),
+            factory.build_default(0.15, "noise_speed".to_string()),
+
         ];
 
         let target = Shader2DTarget::new(device, texture_size,
@@ -60,9 +67,12 @@ impl TextureNode for WaveTextureNode {
         let freq = self.param[0].get(store);
         let hard = self.param[1].get(store);
         let duty = self.param[2].get(store);
-        let angle = self.param[2].get(store);
+        let angle = self.param[3].get(store);
+        let noise_amp = self.param[4].get(store);
+        let noise_scale = self.param[5].get(store);
+        let noise_speed = self.param[6].get(store);
 
-        let uniform = UniformsWave { color, time, freq, hard, duty, angle };
+        let uniform = UniformsWave { color, time, freq, hard, duty, angle, noise_amp, noise_scale, noise_speed };
 
         let device = window.swap_chain_device();
 
