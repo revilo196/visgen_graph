@@ -1,7 +1,7 @@
 use indextree::Arena;
 use nannou::prelude::*;
-use visgen_graph::generators::wave::WaveTextureNode;
-use visgen_graph::{ParameterStore, TextureNode, TextureTree};
+use visgen_graph::generators::circles::CircleGenerator;
+use visgen_graph::{ParameterStore, TextureModelNode, TextureNode, TextureTree};
 use nannou_osc as osc;
 
 struct Model {
@@ -84,12 +84,16 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
         include_bytes!("shaders/frag.spv"),
         &FULL_SCREEN_QUAD,
     )));*/
-    let a = arena.new_node(Box::new(WaveTextureNode::new(
-        "wave".to_string(),
-        size,
-        store,
-        device,
-    )));
+    //let a = arena.new_node(Box::new(WaveTextureNode::new(
+    //    "wave".to_string(),
+    //    size,
+    //    store,
+    //    device,
+    //)));
+
+    let circles = CircleGenerator::new("circles".to_string(), size, store);
+    let a = arena.new_node(Box::new(TextureModelNode::new(circles,device,size)));
+
     /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
     let c = arena.new_node(Box::new(NodeModel::new(30, device, size)));
     let d = arena.new_node(Box::new(NodeModel::new(40, device, size)));
