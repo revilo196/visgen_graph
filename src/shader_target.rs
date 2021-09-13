@@ -1,11 +1,11 @@
-use crate::Vertex2D;
+use std::marker::PhantomData;
 use nannou::prelude::*;
 use nannou::wgpu::{
     CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage,
     TextureView,
 };
 
-pub struct Shader2DTarget<T> {
+pub struct ShaderTarget<T, U> {
     bind_group: wgpu::BindGroup,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
@@ -16,19 +16,22 @@ pub struct Shader2DTarget<T> {
     encoder: Option<CommandEncoder>,
     vertex_len: usize,
     index_len: usize,
+    marker: PhantomData<U>,
 }
 
-impl<T> Shader2DTarget<T>
+impl<T, U> ShaderTarget<T, U>
 where
     T: Copy,
     T: Clone,
+    U: Sized,
+    U: Copy,
 {
     pub fn new(
         device: &Device,
         texture_size: [u32; 2],
         vert: &[u8],
         frag: &[u8],
-        vertecies: &[Vertex2D],
+        vertecies: &[U],
         indecies: &[u16],
         uniform: T,
     ) -> Self {
@@ -45,7 +48,7 @@ where
             .build(device);
 
         let vertices_bytes = vertices_as_bytes(&vertecies[..]);
-        let usage = wgpu::BufferUsage::VERTEX;
+        let usage = wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_DST;
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
             contents: vertices_bytes,
@@ -53,7 +56,7 @@ where
         });
 
         let indecies_bytes = indecies_as_bytes(&indecies[..]);
-        let index_usage = wgpu::BufferUsage::INDEX;
+        let index_usage = wgpu::BufferUsage::INDEX | wgpu::BufferUsage::COPY_DST;
         let index_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
             contents: indecies_bytes,
@@ -82,7 +85,7 @@ where
             .color_format(format)
             .color_blend(wgpu::BlendComponent::REPLACE)
             .alpha_blend(wgpu::BlendComponent::REPLACE)
-            .add_vertex_buffer::<Vertex2D>(&nannou::wgpu::vertex_attr_array![0 => Float32x2])
+            .add_vertex_buffer::<U>(&nannou::wgpu::vertex_attr_array![0 => Float32x2])
             .sample_count(1)
             .primitive_topology(wgpu::PrimitiveTopology::TriangleStrip)
             .build(device);
@@ -98,11 +101,12 @@ where
             encoder: None,
             vertex_len: vertecies.len(),
             index_len: indecies.len(),
+            marker: PhantomData,
         }
     }
     pub fn begin(&mut self, device: &Device) {
         let desc = CommandEncoderDescriptor {
-            label: Some("Shader2DTarget"),
+            label: Some("ShaderTarget"),
         };
         self.encoder = Some(device.create_command_encoder(&desc));
     }
@@ -132,9 +136,43 @@ where
 
     // change the mesh
     // must be placed between begin & submit to take effect
-    pub fn set_mesh(&mut self, vertecies: &[Vertex2D], indecies: &[u16]) {
+    pub fn set_mesh(&mut self,device: &Device, vertecies: &[U], indecies: &[u16]) {
+        
         if let Some(encoder) = self.encoder.as_mut() {
-            todo!();
+            let vertices_bytes = vertices_as_bytes(&vertecies[..]);
+            let vertex_usage = wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_SRC;
+            let new_vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
+                label: None,
+                contents: vertices_bytes,
+                usage: vertex_usage,
+            });
+
+            let indecies_bytes = indecies_as_bytes(&indecies[..]);
+            let index_usage = wgpu::BufferUsage::INDEX | wgpu::BufferUsage::COPY_SRC;
+            let new_index_buffer = device.create_buffer_init(&BufferInitDescriptor {
+                label: None,
+                contents: indecies_bytes,
+                usage: index_usage,
+            });
+
+            encoder.copy_buffer_to_buffer(
+                &new_vertex_buffer,
+                0,
+                &self.vertex_buffer,
+                0,
+                indecies_bytes.len() as wgpu::BufferAddress,
+            );
+            self.vertex_len = vertecies.len();
+
+            encoder.copy_buffer_to_buffer(
+                &new_index_buffer,
+                0,
+                &self.index_buffer,
+                0,
+                indecies_bytes.len() as wgpu::BufferAddress,
+            );
+            self.index_len = indecies.len();
+
         }
     }
 
@@ -169,17 +207,30 @@ where
     }
 }
 
+
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.
-fn vertices_as_bytes(data: &[Vertex2D]) -> &[u8] {
+fn vertices_as_bytes<U>(data: &[U]) -> &[u8] 
+where
+    U: Copy,
+    U: Sized,
+{
     unsafe { wgpu::bytes::from_slice(data) }
 }
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.
 fn indecies_as_bytes(data: &[u16]) -> &[u8] {
     unsafe { wgpu::bytes::from_slice(data) }
 }
+
+// See the `nannou::wgpu::bytes` documentation for why this is necessary.
 fn uniforms_as_bytes<T>(uniforms: &T) -> &[u8]
 where
     T: Copy,
+    T: Sized,
 {
     unsafe { wgpu::bytes::from(uniforms) }
 }
+
+
+use crate::shapes::{Vertex2D,Vertex3D};
+pub type Shader2DTarget<T> = ShaderTarget<T,Vertex2D>;
+pub type Shader3DTarget<T> = ShaderTarget<T,Vertex3D>;

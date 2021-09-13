@@ -34,3 +34,15 @@ pub const FULL_TRI_INDEX: [u16; 3] = [1, 2, 3];
 pub struct Vertex2D {
     pub position: [f32; 2],
 }
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Vertex3D {
+    pub position: [f32; 3],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Vertex4D {
+    pub position: [f32; 4],
+}

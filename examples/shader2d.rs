@@ -1,6 +1,6 @@
 use nannou::prelude::*;
-use visgen_graph::shader2d_target::*;
-use visgen_graph::shapes2d::FULL_SCREEN_QUAD;
+use visgen_graph::shader_target::*;
+use visgen_graph::shapes::FULL_SCREEN_QUAD;
 
 fn main() {
     nannou::app(model).update(update).run();
