@@ -41,6 +41,7 @@ fn model(app: &App) -> Model {
 
     let receiver: osc::Receiver = osc::receiver(PORT).unwrap();
     let program = ProgramManager::new();
+
     Model {
         receiver,
         tree,

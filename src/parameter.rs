@@ -109,9 +109,7 @@ impl ParameterStore {
 
 pub trait ParameterEnd<T> {
     fn len(&self) -> usize;
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
+    fn is_empty(&self) -> bool;
     fn get(&self, store: &ParameterStore) -> T;
     fn get_vec(&self, store: &ParameterStore) -> Vec<T>;
     fn bind<'a>(&'a self, store: &'a ParameterStore) -> ParameterHandle<'a, T>;
@@ -155,6 +153,10 @@ where
 {
     fn len(&self) -> usize {
         self.length
+    }
+
+    fn is_empty(&self) -> bool {
+        self.length > 0
     }
 
     ///creating a handle binds a &[ParameterStore]  making further access easy using [From]
