@@ -52,9 +52,9 @@ impl WaveTextureNode {
         let target = Shader2DTarget::new(device, texture_size,
              vert.as_bytes(), frag.as_bytes(), &FULL_SCREEN_QUAD, &FULL_SCREEN_QUAD_INDEX, uniform); 
         Self {
-            param,
+            target,
             color,
-            target
+            param,
         }
     }
 }

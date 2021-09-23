@@ -18,7 +18,7 @@ impl CircleGenerator {
     pub fn new(name: String,texture_size : [u32;2], store : &mut ParameterStore) -> Self {
 
         let mut parameters = Vec::new();
-        let mut factory = ParameterFactory::new(name.clone(), store);
+        let mut factory = ParameterFactory::new(name, store);
         let color = factory.build_array_default(1.0, 3, "rgb".to_string());
         parameters.push(factory.build_default(2.0 , "width".to_string()));
         parameters.push(factory.build_default( 50.0 ,"count".to_string()));

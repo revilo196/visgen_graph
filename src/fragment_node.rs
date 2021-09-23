@@ -70,7 +70,7 @@ impl Shader2DNode {
             .format(format)
             .build(device);
 
-        let vertices_bytes = vertices_as_bytes(&vertecies[..]);
+        let vertices_bytes = vertices_as_bytes(vertecies);
         let usage = wgpu::BufferUsage::VERTEX;
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,

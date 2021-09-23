@@ -1,9 +1,9 @@
-use std::marker::PhantomData;
 use nannou::prelude::*;
 use nannou::wgpu::{
     CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage,
     TextureView,
 };
+use std::marker::PhantomData;
 
 pub struct ShaderTarget<T, U> {
     bind_group: wgpu::BindGroup,
@@ -47,7 +47,7 @@ where
             .format(format)
             .build(device);
 
-        let vertices_bytes = vertices_as_bytes(&vertecies[..]);
+        let vertices_bytes = vertices_as_bytes(vertecies);
         let usage = wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_DST;
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
@@ -55,7 +55,7 @@ where
             usage,
         });
 
-        let indecies_bytes = indecies_as_bytes(&indecies[..]);
+        let indecies_bytes = indecies_as_bytes(indecies);
         let index_usage = wgpu::BufferUsage::INDEX | wgpu::BufferUsage::COPY_DST;
         let index_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
@@ -136,10 +136,9 @@ where
 
     // change the mesh
     // must be placed between begin & submit to take effect
-    pub fn set_mesh(&mut self,device: &Device, vertecies: &[U], indecies: &[u16]) {
-        
+    pub fn set_mesh(&mut self, device: &Device, vertecies: &[U], indecies: &[u16]) {
         if let Some(encoder) = self.encoder.as_mut() {
-            let vertices_bytes = vertices_as_bytes(&vertecies[..]);
+            let vertices_bytes = vertices_as_bytes(vertecies);
             let vertex_usage = wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_SRC;
             let new_vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
                 label: None,
@@ -147,7 +146,7 @@ where
                 usage: vertex_usage,
             });
 
-            let indecies_bytes = indecies_as_bytes(&indecies[..]);
+            let indecies_bytes = indecies_as_bytes(indecies);
             let index_usage = wgpu::BufferUsage::INDEX | wgpu::BufferUsage::COPY_SRC;
             let new_index_buffer = device.create_buffer_init(&BufferInitDescriptor {
                 label: None,
@@ -172,7 +171,6 @@ where
                 indecies_bytes.len() as wgpu::BufferAddress,
             );
             self.index_len = indecies.len();
-
         }
     }
 
@@ -207,9 +205,8 @@ where
     }
 }
 
-
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.
-fn vertices_as_bytes<U>(data: &[U]) -> &[u8] 
+fn vertices_as_bytes<U>(data: &[U]) -> &[u8]
 where
     U: Copy,
     U: Sized,
@@ -230,7 +227,6 @@ where
     unsafe { wgpu::bytes::from(uniforms) }
 }
 
-
-use crate::shapes::{Vertex2D,Vertex3D};
-pub type Shader2DTarget<T> = ShaderTarget<T,Vertex2D>;
-pub type Shader3DTarget<T> = ShaderTarget<T,Vertex3D>;
+use crate::shapes::{Vertex2D, Vertex3D};
+pub type Shader2DTarget<T> = ShaderTarget<T, Vertex2D>;
+pub type Shader3DTarget<T> = ShaderTarget<T, Vertex3D>;

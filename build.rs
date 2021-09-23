@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Create destination path if necessary
     std::fs::create_dir_all(&folder_out)?;
-    
+
     build_shader_folder(folder, folder_out)?;
 
     Ok(())
@@ -39,9 +39,9 @@ impl fmt::Display for CompileError {
         write!(f, "could not compile shader")
     }
 }
-impl Error for  CompileError {}
+impl Error for CompileError {}
 
-fn build_shader(input: &Path,  out_path: &Path) -> Result<(), Box<dyn Error>> {
+fn build_shader(input: &Path, out_path: &Path) -> Result<(), Box<dyn Error>> {
     let filename = input.file_name().unwrap();
     // let extens = input.extension().unwrap();
     let output_name = filename.to_str().unwrap().replace(".", "_") + ".spv";
@@ -56,8 +56,12 @@ fn build_shader(input: &Path,  out_path: &Path) -> Result<(), Box<dyn Error>> {
         .expect("failed to compile shader");
 
     if !out.status.success() {
-        eprintln!("failed to compile shader {} {}", &out.status, from_utf8(&out.stderr)? );
-        Err(Box::new(CompileError{}))
+        eprintln!(
+            "failed to compile shader {} {}",
+            &out.status,
+            from_utf8(&out.stderr)?
+        );
+        Err(Box::new(CompileError {}))
     } else {
         Ok(())
     }

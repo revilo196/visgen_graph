@@ -15,14 +15,14 @@ use std::{collections::BTreeMap, fmt::Debug};
 ///
 /// similar to [Message]
 #[derive(Clone, Debug)]
-struct Parameter {
-    values: Vec<Type>,
-    address: String,
+pub struct Parameter {
+    pub(crate) values: Vec<Type>,
+    pub(crate) address: String,
 }
 
 impl Parameter {
     /// creates new Parameter with empty values and a given address.
-    fn new(path: String) -> Self {
+    pub fn new(path: String) -> Self {
         Self {
             values: Vec::new(),
             address: path,
@@ -74,9 +74,7 @@ impl ParameterStore {
     ///
     /// returns [None] for non existing indices
     pub fn get_value(&self, token: ParameterIndex) -> Option<Vec<Type>> {
-        self.parameters
-            .get(token)
-            .and_then(|f| Some(f.values.clone()))
+        self.parameters.get(token).map(|f| f.values.clone())
     }
 
     /// read access using the path string
@@ -99,11 +97,21 @@ impl ParameterStore {
             }
         }
     }
-}
 
+    pub fn set_value(&mut self, token: ParameterIndex, value: Vec<Type>) {
+        self.parameters[token].values = value;
+    }
+
+    pub fn config_copy(&self) -> Vec<Parameter> {
+        self.parameters.clone()
+    }
+}
 
 pub trait ParameterEnd<T> {
     fn len(&self) -> usize;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     fn get(&self, store: &ParameterStore) -> T;
     fn get_vec(&self, store: &ParameterStore) -> Vec<T>;
     fn bind<'a>(&'a self, store: &'a ParameterStore) -> ParameterHandle<'a, T>;
@@ -199,7 +207,10 @@ pub struct ParameterFactory<'a> {
 
 impl<'a> ParameterFactory<'a> {
     pub fn new(path: String, store: &'a mut ParameterStore) -> Self {
-        Self { path: format!("/{}",path), store }
+        Self {
+            path: format!("/{}", path),
+            store,
+        }
     }
 
     /// Build a new ParameterEndpoint using [Default] trait
