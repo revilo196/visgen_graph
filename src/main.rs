@@ -1,13 +1,15 @@
 use indextree::Arena;
 use nannou::prelude::*;
-use visgen_graph::generators::circles::CircleGenerator;
-use visgen_graph::{ParameterStore, TextureModelNode, TextureNode, TextureTree};
 use nannou_osc as osc;
+use visgen_graph::generators::circles::CircleGenerator;
+use visgen_graph::program::program::ProgramManager;
+use visgen_graph::{ParameterStore, TextureModelNode, TextureNode, TextureTree};
 
 struct Model {
     receiver: osc::Receiver,
     tree: TextureTree,
     store: ParameterStore,
+    program: ProgramManager,
 }
 
 fn main() {
@@ -34,23 +36,29 @@ fn model(app: &App) -> Model {
     let window = app.window(w_id).unwrap();
 
     let tree = build_tree(&window, texture_size, &mut store);
-    
+
     println!("{:?}", store);
 
-    let receiver : osc::Receiver = osc::receiver(PORT).unwrap();
-
-    Model { tree, store,receiver }
+    let receiver: osc::Receiver = osc::receiver(PORT).unwrap();
+    let program = ProgramManager::new();
+    Model {
+        receiver,
+        tree,
+        store,
+        program,
+    }
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
-
     for (packet, _) in model.receiver.try_iter() {
         if let osc::Packet::Message(message) = packet {
             model.store.update(&message);
+            model.program.update_osc(app.time, &model.store, &message);
             println!("{:?}", message);
         }
     }
 
+    model.program.update(app.time, &mut model.store);
     let win = app.main_window();
     model.tree.update(app, &win, &model.store);
 }
@@ -92,7 +100,7 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     //)));
 
     let circles = CircleGenerator::new("circles".to_string(), size, store);
-    let a = arena.new_node(Box::new(TextureModelNode::new(circles,device,size)));
+    let a = arena.new_node(Box::new(TextureModelNode::new(circles, device, size)));
 
     /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
     let c = arena.new_node(Box::new(NodeModel::new(30, device, size)));

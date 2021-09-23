@@ -23,3 +23,7 @@ pub mod generators {
 pub mod util {
     pub mod shader;
 }
+
+pub mod program {
+    pub mod program;
+}
