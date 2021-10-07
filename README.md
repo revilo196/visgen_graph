@@ -3,6 +3,7 @@
 # todo
 - new speed implementation, to make changing speed, not changing the position
 - rework program parameter storage. (order independent, only store changed parameters)
+
 ## Shadertoy Ideas:
 - https://www.shadertoy.com/view/3l23Rh
 - https://www.shadertoy.com/view/XsX3zl
@@ -25,3 +26,20 @@
 
 ### Filter
 - https://www.shadertoy.com/view/Mdf3zr Egde Glow
+
+# needed
+- NDI output (https://github.com/Julusian/rust-ndi) old but send implemented
+
+
+# nice to have
+- [] load and store NodeGraph
+- [] tool for generating open-stage-control interface/ fragments for some NodeGraph
+
+# creative 
+- more visuals
+- blend textures
+- efx Glow, Blur...
+
+
+# grapth tool
+https://github.com/zlosynth/gazpatcho/
