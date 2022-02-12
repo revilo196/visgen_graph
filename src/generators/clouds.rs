@@ -13,28 +13,19 @@ use wgpu::ShaderModuleDescriptorSpirV;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-struct UniformsWave {
-    color: [f32;4],
+struct UniformsCloud {
     time: f32,
-    freq: f32,
-    hard: f32,
-    duty: f32,
-    angle: f32,
-    noise_amp: f32,
-    noise_scale: f32,
-    noise_speed: f32,
 } 
 
-pub struct WaveTextureNode {
-    target : Shader2DTarget<UniformsWave>,
-    color: ParameterEndpoint<f32>,
-    param: [ParameterEndpoint<f32> ;7],
+pub struct CloudsNode {
+    target : Shader2DTarget<UniformsCloud>,
+    //param: [ParameterEndpoint<f32> ;1],
 }
 
-impl WaveTextureNode {
-    pub fn new(name: String,texture_size : [u32;2], store : &mut ParameterStore,  device: &Device) -> Self {
+impl CloudsNode {
+    pub fn new(_name: String,texture_size : [u32;2], _store : &mut ParameterStore,  device: &Device) -> Self {
         let vert_raw = read_shader_file("shader/minimal2d_vert.spv");
-        let frag_raw =  read_shader_file("shader/wave_frag.spv");
+        let frag_raw =  read_shader_file("shader/clouds_frag.spv");
 
         let vert_data =  nannou::wgpu::util::make_spirv_raw( vert_raw.as_bytes());
         let frag_data = nannou::wgpu::util::make_spirv_raw( frag_raw.as_bytes());
@@ -45,13 +36,13 @@ impl WaveTextureNode {
         };
 
         let frag = ShaderModuleDescriptorSpirV {
-            label: Some("wave_frag"),
+            label: Some("clouds_frag"),
             source : frag_data,
         };
 
-        let uniform = UniformsWave { color:[1.0,1.0,1.0,1.0], time:0.0, freq: 1.0, hard: 1.0, duty:0.5, angle:0.5 , noise_amp:0.0, noise_scale:0.0, noise_speed:1.0 };
+        let uniform = UniformsCloud {  time:0.0 };
 
-        let mut factory = ParameterFactory::new(name, store);
+        /*let mut factory = ParameterFactory::new(name, store);
         let color = factory.build_array_default(1.0, 4, "color".to_string());
         let param = [
             factory.build_default(3.0, "freq".to_string()),
@@ -62,7 +53,7 @@ impl WaveTextureNode {
             factory.build_default(1.5, "noise_scale".to_string()),
             factory.build_default(0.15, "noise_speed".to_string()),
 
-        ];
+        ];*/
 
 
 
@@ -70,26 +61,18 @@ impl WaveTextureNode {
              &vert, &frag, &FULL_SCREEN_QUAD, &FULL_SCREEN_QUAD_INDEX, uniform); 
         Self {
             target,
-            color,
-            param,
+            //param,
         }
     }
 }
 
-impl TextureNode for WaveTextureNode {
-    fn update(&mut self, app: &nannou::App, window: &nannou::window::Window, store: &ParameterStore, _input: Vec<nannou::wgpu::TextureView>) {
-        let color_vec = self.color.get_vec(store);
-        let color = [color_vec[0], color_vec[1], color_vec[2], color_vec[3]];
-        let time = app.time;
-        let freq = self.param[0].get(store);
-        let hard = self.param[1].get(store);
-        let duty = self.param[2].get(store);
-        let angle = self.param[3].get(store);
-        let noise_amp = self.param[4].get(store);
-        let noise_scale = self.param[5].get(store);
-        let noise_speed = self.param[6].get(store);
+impl TextureNode for CloudsNode {
+    fn update(&mut self, app: &nannou::App, window: &nannou::window::Window, _store: &ParameterStore, _input: Vec<nannou::wgpu::TextureView>) {
 
-        let uniform = UniformsWave { color, time, freq, hard, duty, angle, noise_amp, noise_scale, noise_speed };
+        let time = app.time;
+
+
+        let uniform = UniformsCloud { time };
 
         let device = window.device();
 
