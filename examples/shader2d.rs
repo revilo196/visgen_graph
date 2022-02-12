@@ -1,6 +1,7 @@
 use nannou::prelude::*;
 use visgen_graph::shader_target::*;
 use visgen_graph::shapes::FULL_SCREEN_QUAD;
+use ::wgpu::include_spirv_raw;
 
 fn main() {
     nannou::app(model).update(update).run();
@@ -23,10 +24,10 @@ fn model(app: &App) -> Model {
 
     // The gpu device associated with the window's swapchain
     let window = app.window(w_id).unwrap();
-    let device = window.swap_chain_device();
+    let device = window.device();
     let texture_size = [512, 512];
-    let vert = include_bytes!("shaders/vert.spv");
-    let frag = include_bytes!("shaders/frag.spv");
+    let vert = include_spirv_raw!("shaders/vert.spv");
+    let frag = include_spirv_raw!("shaders/frag.spv");
     let uniform = ExampleUniform {
         time: app.time,
         color: [1.0, 0.8, 0.7, 1.0],
@@ -35,8 +36,8 @@ fn model(app: &App) -> Model {
     let target = Shader2DTarget::new(
         device,
         texture_size,
-        vert,
-        frag,
+        &vert,
+        &frag,
         &FULL_SCREEN_QUAD,
         &[],
         uniform,
@@ -52,7 +53,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
         trans: Mat4::IDENTITY,
     };
     let window = app.main_window();
-    let device = window.swap_chain_device();
+    let device = window.device();
     model.target.begin(device);
     model.target.set_uniforms(device, uniform);
     model.target.render_pass();

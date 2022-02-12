@@ -8,8 +8,10 @@
 
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage, TextureView,
+    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages, TextureView
 };
+
+use ::wgpu::include_spirv_raw;
 
 struct Model {
     bind_group: wgpu::BindGroup,
@@ -50,19 +52,19 @@ fn model(app: &App) -> Model {
 
     // The gpu device associated with the window's swapchain
     let window = app.window(w_id).unwrap();
-    let device = window.swap_chain_device();
+    let device = window.device();
     let format = Frame::TEXTURE_FORMAT;
     let texture_size = [512, 512];
     // Load shader modules.
-    let vs_mod = wgpu::shader_from_spirv_bytes(device, include_bytes!("shaders/vert.spv"));
-    let fs_mod = wgpu::shader_from_spirv_bytes(device, include_bytes!("shaders/frag.spv"));
+    let vs_mod = unsafe {device.create_shader_module_spirv( &include_spirv_raw!("shaders/vert.spv"))};
+    let fs_mod = unsafe {device.create_shader_module_spirv( &include_spirv_raw!("shaders/frag.spv"))};
 
     // Frame Texture
     let texture = TextureBuilder::new()
         .size(texture_size)
         // Our texture will be used as the RENDER_ATTACHMENT for our `Draw` render pass.
         // It will also be SAMPLED by the `TextureCapturer` and `TextureResizer`.
-        .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
+        .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
         // Use nannou's default multisampling sample count
         .sample_count(1)
         .format(format)
@@ -71,7 +73,7 @@ fn model(app: &App) -> Model {
 
     // Create the vertex buffer.
     let vertices_bytes = vertices_as_bytes(&VERTICES[..]);
-    let usage = wgpu::BufferUsage::VERTEX;
+    let usage = wgpu::BufferUsages::VERTEX;
     let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
         label: None,
         contents: vertices_bytes,
@@ -106,7 +108,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     };
     let mut encoder = app
         .main_window()
-        .swap_chain_device()
+        .device()
         .create_command_encoder(&desc);
     let texture_view = model.texture.view().build();
     // The render pass can be thought of a single large command consisting of sub commands. Here we
@@ -127,7 +129,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     }
     // Now we're done! The commands we added will be submitted after `view` completes.
     app.main_window()
-        .swap_chain_queue()
+        .queue()
         .submit(Some(encoder.finish()));
 }
 

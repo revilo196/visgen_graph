@@ -1,5 +1,5 @@
 use nannou::wgpu::{
-    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage, TextureView,
+    CommandEncoderDescriptor, Device, Texture, TextureBuilder,TextureUsages, TextureView,TextureCapturer, TextueSnapshot
 };
 use nannou::window::Window;
 use nannou::{Draw, Frame};
@@ -20,7 +20,7 @@ impl TextureTarget {
             .size(texture_size)
             // Our texture will be used as the RENDER_ATTACHMENT for our `Draw` render pass.
             // It will also be SAMPLED by the `TextureCapturer` and `TextureResizer`.
-            .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
+            .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
             // Use nannou's default multisampling sample count.
             .format(Frame::TEXTURE_FORMAT)
             // Build it!
@@ -40,6 +40,20 @@ impl TextureTarget {
         self.texture.view().build()
     }
 
+    pub fn snapshot(&self, window: &Window, texture_capturer: &TextureCapturer) -> TextueSnapshot {
+        let device = window.device();
+        let ce_desc = wgpu::CommandEncoderDescriptor {
+            label: Some("texture capture"),
+        };
+        let mut encoder = device.create_command_encoder(&ce_desc);
+
+        let snapshot = texture_capturer.capture(device, &mut encoder, &self.texture);
+
+        window.queue().submit(Some(encoder.finish()));
+        
+        return snapshot;
+    }
+
     /// get the size of texture inside
     pub fn size(&self) -> [u32; 2] {
         self.texture.size()
@@ -48,7 +62,7 @@ impl TextureTarget {
     /// Submit a Draw object filled with draw commands to the renderer
     /// and render to the texture.
     pub fn submit(&mut self, window: &Window, draw: &Draw) {
-        let device = window.swap_chain_device();
+        let device = window.device();
 
         let ce_desc = CommandEncoderDescriptor {
             label: Some("texture renderer"),
@@ -58,6 +72,6 @@ impl TextureTarget {
             .render_to_texture(device, &mut encoder, draw, &self.texture);
 
         // Submit the commands for our drawing and texture capture to the GPU.
-        window.swap_chain_queue().submit(Some(encoder.finish()));
+        window.queue().submit(Some(encoder.finish()));
     }
 }

@@ -1,8 +1,9 @@
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsage,
-    TextureView,
+    CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages,
+    TextureView,TextueSnapshot,TextureCapturer
 };
+use ::wgpu::ShaderModuleDescriptorSpirV;
 use std::marker::PhantomData;
 
 pub struct ShaderTarget<T, U> {
@@ -29,26 +30,26 @@ where
     pub fn new(
         device: &Device,
         texture_size: [u32; 2],
-        vert: &[u8],
-        frag: &[u8],
+        vert: &ShaderModuleDescriptorSpirV,
+        frag: &ShaderModuleDescriptorSpirV,
         vertecies: &[U],
         indecies: &[u16],
         uniform: T,
     ) -> Self {
         let format = Frame::TEXTURE_FORMAT;
-        let vs_mod = wgpu::shader_from_spirv_bytes(device, vert);
-        let fs_mod = wgpu::shader_from_spirv_bytes(device, frag);
+        let vs_mod = unsafe {device.create_shader_module_spirv(vert)};
+        let fs_mod = unsafe {device.create_shader_module_spirv(frag)};
 
         // Frame Texture
         let texture = TextureBuilder::new()
             .size(texture_size)
-            .usage(TextureUsage::RENDER_ATTACHMENT | TextureUsage::COPY_DST | TextureUsage::SAMPLED)
+            .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
             .sample_count(1)
             .format(format)
             .build(device);
 
         let vertices_bytes = vertices_as_bytes(vertecies);
-        let usage = wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_DST;
+        let usage = wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST;
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
             contents: vertices_bytes,
@@ -56,7 +57,7 @@ where
         });
 
         let indecies_bytes = indecies_as_bytes(indecies);
-        let index_usage = wgpu::BufferUsage::INDEX | wgpu::BufferUsage::COPY_DST;
+        let index_usage = wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST;
         let index_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
             contents: indecies_bytes,
@@ -65,7 +66,7 @@ where
 
         let uniforms = uniform;
         let uniforms_bytes = uniforms_as_bytes(&uniforms);
-        let usage = wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST;
+        let usage = wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST;
         let uniform_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: None,
             contents: uniforms_bytes,
@@ -73,7 +74,7 @@ where
         });
 
         let bind_group_layout = wgpu::BindGroupLayoutBuilder::new()
-            .uniform_buffer(wgpu::ShaderStage::VERTEX_FRAGMENT, false)
+            .uniform_buffer(wgpu::ShaderStages::VERTEX_FRAGMENT, false)
             .build(device);
         let bind_group = wgpu::BindGroupBuilder::new()
             .buffer::<T>(&uniform_buffer, 0..1)
@@ -118,7 +119,7 @@ where
         if let Some(encoder) = self.encoder.as_mut() {
             let uniforms_size = std::mem::size_of::<T>() as wgpu::BufferAddress;
             let uniforms_bytes = uniforms_as_bytes(&self.uniforms);
-            let usage = wgpu::BufferUsage::COPY_SRC;
+            let usage = wgpu::BufferUsages::COPY_SRC;
             let new_uniform_buffer = device.create_buffer_init(&BufferInitDescriptor {
                 label: None,
                 contents: uniforms_bytes,
@@ -139,7 +140,7 @@ where
     pub fn set_mesh(&mut self, device: &Device, vertecies: &[U], indecies: &[u16]) {
         if let Some(encoder) = self.encoder.as_mut() {
             let vertices_bytes = vertices_as_bytes(vertecies);
-            let vertex_usage = wgpu::BufferUsage::VERTEX | wgpu::BufferUsage::COPY_SRC;
+            let vertex_usage = wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_SRC;
             let new_vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
                 label: None,
                 contents: vertices_bytes,
@@ -147,7 +148,7 @@ where
             });
 
             let indecies_bytes = indecies_as_bytes(indecies);
-            let index_usage = wgpu::BufferUsage::INDEX | wgpu::BufferUsage::COPY_SRC;
+            let index_usage = wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_SRC;
             let new_index_buffer = device.create_buffer_init(&BufferInitDescriptor {
                 label: None,
                 contents: indecies_bytes,
@@ -196,13 +197,29 @@ where
         let encoder = self.encoder.take();
 
         if let Some(encoder) = encoder {
-            window.swap_chain_queue().submit(Some(encoder.finish()));
+            window.queue().submit(Some(encoder.finish()));
         }
     }
 
     pub fn texture_view(&self) -> TextureView {
         self.texture.view().build()
     }
+
+    pub fn snapshot(&self, window: &Window, texture_capturer: &TextureCapturer) -> TextueSnapshot {
+        let device = window.device();
+        let ce_desc = wgpu::CommandEncoderDescriptor {
+            label: Some("texture capture"),
+        };
+        let mut encoder = device.create_command_encoder(&ce_desc);
+
+        let snapshot = texture_capturer.capture(device, &mut encoder, &self.texture);
+
+        window.queue().submit(Some(encoder.finish()));
+        
+        return snapshot;
+    }
+
+    
 }
 
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.
