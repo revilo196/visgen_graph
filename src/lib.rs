@@ -18,12 +18,19 @@ pub mod generators {
     pub mod circles;
     pub mod stripes;
     pub mod wave;
+    pub mod clouds;
 }
 
 pub mod util {
     pub mod shader;
+    pub mod ndi_stream;
 }
 
 pub mod program {
     pub mod program;
+}
+pub mod combiner {
+    pub mod shader_combiner;
+    pub mod fader_node;
+    pub mod masking_node;
 }

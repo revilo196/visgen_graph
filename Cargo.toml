@@ -16,8 +16,15 @@ path = "src/main.rs"
 
 [dependencies]
 indextree = "4.3.1"
-nannou = "0.17.1"
-nannou_osc = "0.17.0"
-wgpu = "0.9.0"
-wgpu-types = "0.9.0"
+nannou = {version = "0.18.1", features = ["spirv"] }
+nannou_osc = "0.18.0"
+wgpu = { version = "0.11.1",  features = ["spirv"] }
+wgpu-types = "0.11.0"
 rand = "0.8.4"
+ndi = { git = "https://github.com/revilo196/ndi-rs.git", branch = "sending" }
+image = "0.23"
+crossbeam = "0.8"
+
+[workspace]
+# Required for wgpu v0.10 feature resolution.
+resolver = "2"
