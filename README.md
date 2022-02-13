@@ -41,5 +41,5 @@
 - efx Glow, Blur...
 
 
-# grapth tool
+# graph tool
 https://github.com/zlosynth/gazpatcho/
