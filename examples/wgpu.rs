@@ -7,9 +7,7 @@
 //! better performance.
 
 use nannou::prelude::*;
-use nannou::wgpu::{
-    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages, TextureView
-};
+use nannou::wgpu::{CommandEncoderDescriptor, Texture, TextureBuilder, TextureUsages};
 
 use ::wgpu::include_spirv_raw;
 
@@ -56,15 +54,21 @@ fn model(app: &App) -> Model {
     let format = Frame::TEXTURE_FORMAT;
     let texture_size = [512, 512];
     // Load shader modules.
-    let vs_mod = unsafe {device.create_shader_module_spirv( &include_spirv_raw!("shaders/vert.spv"))};
-    let fs_mod = unsafe {device.create_shader_module_spirv( &include_spirv_raw!("shaders/frag.spv"))};
+    let vs_mod =
+        unsafe { device.create_shader_module_spirv(&include_spirv_raw!("shaders/vert.spv")) };
+    let fs_mod =
+        unsafe { device.create_shader_module_spirv(&include_spirv_raw!("shaders/frag.spv")) };
 
     // Frame Texture
     let texture = TextureBuilder::new()
         .size(texture_size)
         // Our texture will be used as the RENDER_ATTACHMENT for our `Draw` render pass.
         // It will also be SAMPLED by the `TextureCapturer` and `TextureResizer`.
-        .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
+        .usage(
+            TextureUsages::RENDER_ATTACHMENT
+                | TextureUsages::COPY_DST
+                | TextureUsages::TEXTURE_BINDING,
+        )
         // Use nannou's default multisampling sample count
         .sample_count(1)
         .format(format)
@@ -106,10 +110,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     let desc = CommandEncoderDescriptor {
         label: Some("Texture"),
     };
-    let mut encoder = app
-        .main_window()
-        .device()
-        .create_command_encoder(&desc);
+    let mut encoder = app.main_window().device().create_command_encoder(&desc);
     let texture_view = model.texture.view().build();
     // The render pass can be thought of a single large command consisting of sub commands. Here we
     // begin a render pass that outputs to the frame's texture. Then we add sub-commands for
@@ -128,9 +129,7 @@ fn update(app: &App, model: &mut Model, _update: Update) {
         render_pass.draw(vertex_range, instance_range);
     }
     // Now we're done! The commands we added will be submitted after `view` completes.
-    app.main_window()
-        .queue()
-        .submit(Some(encoder.finish()));
+    app.main_window().queue().submit(Some(encoder.finish()));
 }
 
 fn view(_app: &App, model: &Model, frame: Frame) {

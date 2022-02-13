@@ -74,7 +74,7 @@ impl FaderNode {
 }
 
 impl TextureNode for FaderNode {
-    fn update(&mut self, app: &nannou::App, window: &nannou::window::Window, store: &ParameterStore, input: Vec<nannou::wgpu::TextureView>) {
+    fn update(&mut self, _app: &nannou::App, window: &nannou::window::Window, store: &ParameterStore, input: Vec<nannou::wgpu::TextureView>) {
         let f0 = self.param[0].get(store);
         let f1 = self.param[1].get(store);
         let f2 = self.param[2].get(store);

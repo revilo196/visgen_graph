@@ -65,7 +65,7 @@ impl MaskingNode {
 }
 
 impl TextureNode for MaskingNode {
-    fn update(&mut self, app: &nannou::App, window: &nannou::window::Window, store: &ParameterStore, input: Vec<nannou::wgpu::TextureView>) {
+    fn update(&mut self, _app: &nannou::App, window: &nannou::window::Window, store: &ParameterStore, input: Vec<nannou::wgpu::TextureView>) {
         assert_eq!(input.len(), 3 , "Not the correct number of Textures given");
         
         let f0 = self.param[0].get(store);

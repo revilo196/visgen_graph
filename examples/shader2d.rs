@@ -1,7 +1,7 @@
+use ::wgpu::include_spirv_raw;
 use nannou::prelude::*;
 use visgen_graph::shader_target::*;
 use visgen_graph::shapes::FULL_SCREEN_QUAD;
-use ::wgpu::include_spirv_raw;
 
 fn main() {
     nannou::app(model).update(update).run();

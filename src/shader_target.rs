@@ -1,9 +1,9 @@
+use ::wgpu::ShaderModuleDescriptorSpirV;
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages,
-    TextureView,TextueSnapshot,TextureCapturer
+    CommandEncoder, CommandEncoderDescriptor, Device, TextueSnapshot, Texture, TextureBuilder,
+    TextureCapturer, TextureUsages, TextureView,
 };
-use ::wgpu::ShaderModuleDescriptorSpirV;
 use std::marker::PhantomData;
 
 pub struct ShaderTarget<T, U> {
@@ -37,13 +37,17 @@ where
         uniform: T,
     ) -> Self {
         let format = Frame::TEXTURE_FORMAT;
-        let vs_mod = unsafe {device.create_shader_module_spirv(vert)};
-        let fs_mod = unsafe {device.create_shader_module_spirv(frag)};
+        let vs_mod = unsafe { device.create_shader_module_spirv(vert) };
+        let fs_mod = unsafe { device.create_shader_module_spirv(frag) };
 
         // Frame Texture
         let texture = TextureBuilder::new()
             .size(texture_size)
-            .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
+            .usage(
+                TextureUsages::RENDER_ATTACHMENT
+                    | TextureUsages::COPY_DST
+                    | TextureUsages::TEXTURE_BINDING,
+            )
             .sample_count(1)
             .format(format)
             .build(device);
@@ -215,11 +219,9 @@ where
         let snapshot = texture_capturer.capture(device, &mut encoder, &self.texture);
 
         window.queue().submit(Some(encoder.finish()));
-        
-        return snapshot;
-    }
 
-    
+        snapshot
+    }
 }
 
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.

@@ -1,5 +1,25 @@
 # visgen_graph
 
+
+## Features Done:
+ - [x] Tree Based Rendering Textures Graph
+ - [x] OSC-Control with global parameter store
+ - [x] Simple base for Rendering 2D/3D with shaders
+ - [x] Texture combination blending + masking
+ - [ ] First Steps to create Scene Programmes
+
+### Texture Generators:
+ - [x] simple circles
+ - [x] simple Stripes
+ - [x] wave Texture
+ - [x] Path-Tracing Clouds
+
+### Texture Modifiers:
+ - [x] simple Addition of 2 Textures
+ - [x] Blend/Fade Combining of 2 Textures
+ - [x] Masking Combine 2 Texture using a 3rd Texture as Mask
+
+
 # todo
 - new speed implementation, to make changing speed, not changing the position
 - rework program parameter storage. (order independent, only store changed parameters)
@@ -26,9 +46,6 @@
 
 ### Filter
 - https://www.shadertoy.com/view/Mdf3zr Egde Glow
-
-# needed
-- NDI output (https://github.com/Julusian/rust-ndi) old but send implemented
 
 
 # nice to have

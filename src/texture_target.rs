@@ -1,5 +1,6 @@
 use nannou::wgpu::{
-    CommandEncoderDescriptor, Device, Texture, TextureBuilder,TextureUsages, TextureView,TextureCapturer, TextueSnapshot
+    CommandEncoderDescriptor, Device, TextueSnapshot, Texture, TextureBuilder, TextureCapturer,
+    TextureUsages, TextureView,
 };
 use nannou::window::Window;
 use nannou::{Draw, Frame};
@@ -20,7 +21,11 @@ impl TextureTarget {
             .size(texture_size)
             // Our texture will be used as the RENDER_ATTACHMENT for our `Draw` render pass.
             // It will also be SAMPLED by the `TextureCapturer` and `TextureResizer`.
-            .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
+            .usage(
+                TextureUsages::RENDER_ATTACHMENT
+                    | TextureUsages::COPY_DST
+                    | TextureUsages::TEXTURE_BINDING,
+            )
             // Use nannou's default multisampling sample count.
             .format(Frame::TEXTURE_FORMAT)
             // Build it!
@@ -50,8 +55,8 @@ impl TextureTarget {
         let snapshot = texture_capturer.capture(device, &mut encoder, &self.texture);
 
         window.queue().submit(Some(encoder.finish()));
-        
-        return snapshot;
+
+        snapshot
     }
 
     /// get the size of texture inside

@@ -5,7 +5,6 @@ use nannou::wgpu::{
 };
 use ::wgpu::{ShaderModuleDescriptorSpirV, TextureSampleType};
 use std::marker::PhantomData;
-use nannou::image::EncodableLayout;
 
 pub struct ShaderCombiner<T, U> {
     bind_group_layout : wgpu::BindGroupLayout,
@@ -244,7 +243,7 @@ where
 
         window.queue().submit(Some(encoder.finish()));
         
-        return snapshot;
+        snapshot
     }
 
     

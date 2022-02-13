@@ -16,21 +16,21 @@ pub use texture_tree::*;
 
 pub mod generators {
     pub mod circles;
+    pub mod clouds;
     pub mod stripes;
     pub mod wave;
-    pub mod clouds;
 }
 
 pub mod util {
-    pub mod shader;
     pub mod ndi_stream;
+    pub mod shader;
 }
 
 pub mod program {
     pub mod program;
 }
 pub mod combiner {
-    pub mod shader_combiner;
     pub mod fader_node;
     pub mod masking_node;
+    pub mod shader_combiner;
 }

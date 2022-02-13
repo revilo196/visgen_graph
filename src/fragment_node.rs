@@ -1,7 +1,8 @@
 use crate::{ParameterStore, TextureNode};
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureView,TextureUsages, BufferUsages
+    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages,
+    TextureView,
 };
 
 use ::wgpu::ShaderModuleDescriptorSpirV;
@@ -61,14 +62,18 @@ impl Shader2DNode {
         vertecies: &[Vertex2D],
     ) -> Self {
         let format = Frame::TEXTURE_FORMAT;
-        
+
         let vs_mod = unsafe { device.create_shader_module_spirv(vert) };
-        let fs_mod = unsafe {  device.create_shader_module_spirv(frag) };
-        
+        let fs_mod = unsafe { device.create_shader_module_spirv(frag) };
+
         // Frame Texture
         let texture = TextureBuilder::new()
             .size(texture_size)
-            .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
+            .usage(
+                TextureUsages::RENDER_ATTACHMENT
+                    | TextureUsages::COPY_DST
+                    | TextureUsages::TEXTURE_BINDING,
+            )
             .sample_count(1)
             .format(format)
             .build(device);
@@ -118,7 +123,7 @@ impl Shader2DNode {
             .sample_count(1)
             .primitive_topology(wgpu::PrimitiveTopology::TriangleStrip)
             .build(device);
-        
+
         Self {
             bind_group,
             vertex_buffer,
@@ -151,14 +156,11 @@ impl TextureNode for Shader2DNode {
         let uniforms_size = std::mem::size_of::<Uniforms2D>() as wgpu::BufferAddress;
         let uniforms_bytes = uniforms_as_bytes(&self.uniforms);
         let usage = wgpu::BufferUsages::COPY_SRC;
-        let new_uniform_buffer =
-            window
-                .device()
-                .create_buffer_init(&BufferInitDescriptor {
-                    label: None,
-                    contents: uniforms_bytes,
-                    usage,
-                });
+        let new_uniform_buffer = window.device().create_buffer_init(&BufferInitDescriptor {
+            label: None,
+            contents: uniforms_bytes,
+            usage,
+        });
         encoder.copy_buffer_to_buffer(
             &new_uniform_buffer,
             0,
@@ -200,7 +202,11 @@ impl TextureNode for Shader2DNode {
         self.texture.view().build() //Building a TextureView and move it out
     }
 
-    fn snapshot(&self, window: &Window, texture_capturer: &wgpu::TextureCapturer) -> wgpu::TextueSnapshot {
+    fn snapshot(
+        &self,
+        window: &Window,
+        texture_capturer: &wgpu::TextureCapturer,
+    ) -> wgpu::TextueSnapshot {
         let device = window.device();
         let ce_desc = wgpu::CommandEncoderDescriptor {
             label: Some("texture capture"),
@@ -210,8 +216,8 @@ impl TextureNode for Shader2DNode {
         let snapshot = texture_capturer.capture(device, &mut encoder, &self.texture);
 
         window.queue().submit(Some(encoder.finish()));
-        
-        return snapshot; 
+
+        snapshot
     }
 }
 

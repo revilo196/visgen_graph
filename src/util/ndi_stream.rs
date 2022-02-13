@@ -4,11 +4,13 @@ use ndi;
 use image::{ImageBuffer, Rgba};
 use crossbeam::queue::ArrayQueue;
 
+type NdiImageBuffer = ImageBuffer<Rgba<u8>, Vec<u8>>;
+type NdiTimedFrame = (Box<NdiImageBuffer>, i64);
 
 pub struct NdiStream {
     send : ndi::Send,
     framerate: i32,
-    queue : Arc<ArrayQueue<(Box<ImageBuffer<Rgba<u8>, Vec<u8>>>, i64)>>,
+    queue : Arc<ArrayQueue<NdiTimedFrame>>,
     frame : Option<ndi::VideoData>,
 }
 
@@ -18,7 +20,7 @@ impl NdiStream
     pub fn new(name: String, framerate: i32) -> Self {
         Self {
             send: ndi::SendBuilder::new().ndi_name(name).clock_video(true).build().expect("error creating NDI sender"),
-            framerate: framerate,
+            framerate,
             queue: Arc::new(ArrayQueue::new(2)),
             frame: None,
         }

@@ -37,7 +37,11 @@ where
         self.texture.texture_view() //Building a TextureView and move it out
     }
 
-    fn snapshot(&self, window: &Window, texture_capturer: &nannou::wgpu::TextureCapturer) -> nannou::wgpu::TextueSnapshot {
+    fn snapshot(
+        &self,
+        window: &Window,
+        texture_capturer: &nannou::wgpu::TextureCapturer,
+    ) -> nannou::wgpu::TextueSnapshot {
         self.texture.snapshot(window, texture_capturer)
     }
 }

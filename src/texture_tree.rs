@@ -1,6 +1,6 @@
 use crate::ParameterStore;
 use indextree::{Arena, NodeId};
-use nannou::wgpu::{TextureView, TextureCapturer, TextueSnapshot};
+use nannou::wgpu::{TextueSnapshot, TextureCapturer, TextureView};
 use nannou::window::Window;
 use nannou::App;
 
@@ -68,7 +68,15 @@ impl TextureTree {
         self.arena.get(self.root).unwrap().get().output()
     }
 
-    pub fn snapshot(&self, window: &Window, texture_capturer: &nannou::wgpu::TextureCapturer) -> nannou::wgpu::TextueSnapshot {
-        self.arena.get(self.root).unwrap().get().snapshot(window, texture_capturer)
+    pub fn snapshot(
+        &self,
+        window: &Window,
+        texture_capturer: &nannou::wgpu::TextureCapturer,
+    ) -> nannou::wgpu::TextueSnapshot {
+        self.arena
+            .get(self.root)
+            .unwrap()
+            .get()
+            .snapshot(window, texture_capturer)
     }
 }
