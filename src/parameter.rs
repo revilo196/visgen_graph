@@ -8,6 +8,7 @@ use crate::osc_convert::FromOscType;
 ///
 use nannou_osc::{Message, Type};
 use std::{collections::BTreeMap, fmt::Debug};
+use std::fmt; // Import `fmt`
 
 /// private struct that stores:
 ///   * **value**: current value(s) of the parameter
@@ -27,6 +28,12 @@ impl Parameter {
             values: Vec::new(),
             address: path,
         }
+    }
+}
+
+impl fmt::Display for Parameter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} : \t {:#?}", self.address, self.values)
     }
 }
 
@@ -107,6 +114,19 @@ impl ParameterStore {
     }
 }
 
+impl fmt::Display for ParameterStore {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for p in &self.parameters {
+            let res = writeln!(f, "{}", p);
+            
+            if  res.is_err() {
+                return res;
+            }
+  
+        }
+        Ok(())
+    }
+}
 pub trait ParameterEnd<T> {
     fn len(&self) -> usize;
     fn is_empty(&self) -> bool;
