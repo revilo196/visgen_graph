@@ -1,3 +1,6 @@
+/// ShaderCombiner similar to [crate::shader_target::ShaderTarget] but makes it possible to add textures to the shader
+/// ToDo -- Very duplicate code to ShaderTarget
+
 use nannou::prelude::*;
 use nannou::wgpu::{
     CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages,
@@ -6,6 +9,7 @@ use nannou::wgpu::{
 use ::wgpu::{ShaderModuleDescriptorSpirV, TextureSampleType};
 use std::marker::PhantomData;
 
+/// ShaderCombiner similar to [crate::shader_target::ShaderTarget] but makes it possible to add textures to the shader
 pub struct ShaderCombiner<T, U> {
     bind_group_layout : wgpu::BindGroupLayout,
     sampler : wgpu::Sampler,

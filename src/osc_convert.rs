@@ -9,6 +9,7 @@ pub trait FromOscType
 where
     Self: Sized,
 {
+    /// convert from [Type] to some other type
     fn from_osc(t: Type) -> Option<Self>;
 }
 

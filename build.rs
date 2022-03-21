@@ -1,3 +1,5 @@
+/// build script used to pre-compile spriv shaders using glslc
+
 use std::error::Error;
 use std::fmt;
 use std::path::Path;
@@ -41,6 +43,7 @@ impl fmt::Display for CompileError {
 }
 impl Error for CompileError {}
 
+/// compile a shaders to spriv using glslc
 fn build_shader(input: &Path, out_path: &Path) -> Result<(), Box<dyn Error>> {
     let filename = input.file_name().unwrap();
     // let extens = input.extension().unwrap();

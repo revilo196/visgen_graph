@@ -1,12 +1,13 @@
 use std::sync::{Arc};
 
-use ndi;
+use ndi;  //custom fork/branch with fixes for sending NDI
 use image::{ImageBuffer, Rgba};
 use crossbeam::queue::ArrayQueue;
 
 type NdiImageBuffer = ImageBuffer<Rgba<u8>, Vec<u8>>;
 type NdiTimedFrame = (Box<NdiImageBuffer>, i64);
 
+/// NDI Video Stream
 pub struct NdiStream {
     send : ndi::Send,
     framerate: i32,
@@ -14,9 +15,10 @@ pub struct NdiStream {
     frame : Option<ndi::VideoData>,
 }
 
+
 impl NdiStream 
 {   
-    // create new NdiStream
+    /// create new NdiStream
     pub fn new(name: String, framerate: i32) -> Self {
         Self {
             send: ndi::SendBuilder::new().ndi_name(name).clock_video(true).build().expect("error creating NDI sender"),
@@ -47,7 +49,7 @@ impl NdiStream
     /// receives and async image_buffer and sends it in the stream
     pub fn send_video_from_queue(&mut self) {
         if let Some((img, time)) = self.queue.pop()  {
-                self.send_image(img, time);
+                self.send_image(img, time); // ToDo make it possible to async this
         }
     }
 
@@ -58,6 +60,7 @@ impl NdiStream
         let qu = self.queue.clone();
 
         //take a snapshot and send it to ndi_stream
+        //  snapshot.read is async the frame is only queued and send in the next pass
         snapshot.read(move |result| {
         let image = result.expect("faild to map texture").to_owned();
         qu.push((Box::new(image), timecode)).ok();

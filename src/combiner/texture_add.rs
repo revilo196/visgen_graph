@@ -4,6 +4,9 @@ use nannou::prelude::*;
 use nannou::wgpu::TextureView;
 use ::wgpu::BlendComponent;
 
+/// simple model to add n textures together
+/// 
+/// this uses nannou no shader needed
 pub struct TextureAddModel {
     texture_size : [u32;2],
 }

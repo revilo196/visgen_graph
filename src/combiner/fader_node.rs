@@ -22,6 +22,8 @@ struct UniformsFade {
     fi1i2: f32,
 } 
 
+
+/// Combining 2 textures using different parameters
 pub struct FaderNode {
     target : ShaderCombiner<UniformsFade, Vertex2D>,
     param: [ParameterEndpoint<f32> ;9],

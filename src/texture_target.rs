@@ -16,6 +16,11 @@ pub struct TextureTarget {
 }
 
 impl TextureTarget {
+
+    /// Create a new Texture Target
+    /// ## Parameters
+    /// - `device`: [Device] to bind the texture to
+    /// - `texture_size`: size of the  texture / frame buffer
     pub fn new(device: &Device, texture_size: [u32; 2]) -> Self {
         let texture = TextureBuilder::new()
             .size(texture_size)
@@ -40,11 +45,13 @@ impl TextureTarget {
     }
 
     /// get an texture view to the target texture.
-    /// this texture can then be used to draw to oder textures
+    /// this texture can then be used in rendering 
     pub fn texture_view(&self) -> TextureView {
         self.texture.view().build()
     }
 
+
+    // create a snapshot of the texture to be exported to the CPU
     pub fn snapshot(&self, window: &Window, texture_capturer: &TextureCapturer) -> TextueSnapshot {
         let device = window.device();
         let ce_desc = wgpu::CommandEncoderDescriptor {

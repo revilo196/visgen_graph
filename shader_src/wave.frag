@@ -9,7 +9,7 @@ layout(location = 0) out vec4 f_color;
 layout(location = 1) in vec2 v_pos;
 
 layout(set = 0, binding = 0) uniform Data {
-    vec4 color;
+    vec3 color;
     float time;
     float freq;
     float hard;
@@ -24,7 +24,7 @@ layout(set = 0, binding = 0) uniform Data {
 #include "perlin.glsl"
 
 void main() {
-    vec4 color = uniforms.color;
+    vec3 color = uniforms.color;
     float time = uniforms.time;
     float freq = uniforms.freq;
     float hard = uniforms.hard;
@@ -56,5 +56,5 @@ void main() {
     intensity = (intensity+1)/2; 
 
 
-    f_color =  color * intensity;
+    f_color =  vec4(color, 1.0) * intensity;
 }

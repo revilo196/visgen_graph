@@ -1,9 +1,9 @@
+/// Very expensive fragment shader for rendering clouds
+/// 
+/// EXPERIMENTAL
+
 use crate::ParameterStore;
 use crate::TextureNode;
-
-//use crate::ParameterEndpoint;
-//use crate::ParameterFactory;
-//use crate::ParameterEnd;
 
 use crate::shader_target::Shader2DTarget;
 use crate::shapes::{FULL_SCREEN_QUAD,FULL_SCREEN_QUAD_INDEX};
@@ -43,21 +43,6 @@ impl CloudsNode {
         };
 
         let uniform = UniformsCloud {  time:0.0 };
-
-        /*let mut factory = ParameterFactory::new(name, store);
-        let color = factory.build_array_default(1.0, 4, "color".to_string());
-        let param = [
-            factory.build_default(3.0, "freq".to_string()),
-            factory.build_default(0.0, "hard".to_string()),
-            factory.build_default(2.0, "duty".to_string()),
-            factory.build_default(1.0, "angle".to_string()),
-            factory.build_default(30.0, "noise_amp".to_string()),
-            factory.build_default(1.5, "noise_scale".to_string()),
-            factory.build_default(0.15, "noise_speed".to_string()),
-
-        ];*/
-
-
 
         let target = Shader2DTarget::new(device, texture_size,
              &vert, &frag, &FULL_SCREEN_QUAD, &FULL_SCREEN_QUAD_INDEX, uniform); 

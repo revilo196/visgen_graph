@@ -3,13 +3,13 @@ use nannou::prelude::*;
 use nannou_osc as osc;
 
 use visgen_graph::generators::clouds::CloudsNode;
-//use visgen_graph::generators::stripes::StripeGenerator;
-//use visgen_graph::generators::wave::WaveTextureNode;
-//use visgen_graph::combiner::fader_node::FaderNode;
-//use visgen_graph::combiner::masking_node::MaskingNode;
-//use visgen_graph::generators::circles::CircleGenerator;
+use visgen_graph::generators::stripes::StripeGenerator;
+use visgen_graph::generators::wave::WaveTextureNode;
+use visgen_graph::combiner::fader_node::FaderNode;
+use visgen_graph::combiner::masking_node::MaskingNode;
+use visgen_graph::generators::circles::CircleGenerator;
 use visgen_graph::program::program::ProgramManager;
-use visgen_graph::{ParameterStore, TextureNode, TextureTree};
+use visgen_graph::{ParameterStore, TextureNode, TextureTree, TextureModelNode};
 
 pub const DEFAULT_POWER_PREFERENCE: wgpu::PowerPreference = wgpu::PowerPreference::HighPerformance;
 
@@ -40,7 +40,7 @@ fn main() {
 const PORT: u16 = 6060;
 
 fn model(app: &App) -> Model {
-    let texture_size = [512, 512];
+    let texture_size = [512,512];
     let mut store = ParameterStore::new();
 
     // to use precompiled SPIRV(GLSL) shaders without decompilation(naga)
@@ -63,7 +63,7 @@ fn model(app: &App) -> Model {
     let window = app.window(w_id).unwrap();
     let tree = build_tree(&window, texture_size, &mut store);
 
-    println!("{:?}", store);
+    println!("{}", store);
 
     let receiver: osc::Receiver = osc::receiver(PORT).unwrap();
     let program = ProgramManager::new();
@@ -93,12 +93,12 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     }
 
     model.program.update(app.time, &mut model.store);
-    println!(
+    /*println!(
         "runtime {} timing {} fps {} ",
         app.time,
         app.time - model.lasttime,
         1.0f32 / (app.time - model.lasttime)
-    );
+    );*/
     model.lasttime = app.time;
     // Update the Model Tree
     let win = app.main_window();
@@ -131,39 +131,41 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     let mut arena: Arena<Box<dyn TextureNode>> = Arena::new();
 
     // Add some new nodes to the arena
-    //let stripe = StripeGenerator::new("Stripes".to_string(), size, store);
-    //let a = arena.new_node(Box::new(TextureModelNode::new(stripe,device,size)));
+    let stripe1 = StripeGenerator::new("Stripes1".to_string(), size, store);
+    let s1 = arena.new_node(Box::new(TextureModelNode::new(stripe1,device,size)));
 
-    /*let a = arena.new_node(Box::new(Shader2DNode::new(
-        device,
-        size,
-        include_bytes!("shaders/vert.spv"),
-        include_bytes!("shaders/frag.spv"),
-        &FULL_SCREEN_QUAD,
-    )));*/
-    /*  let b = arena.new_node(Box::new(WaveTextureNode::new(
-        "wave".to_string(),
-        size,
-        store,
-        device,
-    )));*/
+    let stripe2 = StripeGenerator::new("Stripes2".to_string(), size, store);
+    let s2 = arena.new_node(Box::new(TextureModelNode::new(stripe2,device,size)));
 
-    //let circles = CircleGenerator::new("circles".to_string(), size, store);
-    //let c = arena.new_node(Box::new(TextureModelNode::new(circles, device, size)));
 
-    /*     let d = arena.new_node( Box::new(MaskingNode::new(
-        "mask".to_string(),
-        size,
-        store,
-        device
-    )));*/
-
-    let e = arena.new_node(Box::new(CloudsNode::new(
-        "clouds".to_string(),
+    let w1 = arena.new_node(Box::new(WaveTextureNode::new(
+        "wave1".to_string(),
         size,
         store,
         device,
     )));
+
+
+    let w2 = arena.new_node(Box::new(WaveTextureNode::new(
+        "wave2".to_string(),
+        size,
+        store,
+        device,
+    )));
+
+    let circles = CircleGenerator::new("circles".to_string(), size, store);
+    let c1 = arena.new_node(Box::new(TextureModelNode::new(circles, device, size)));
+
+    let m1 = arena.new_node( Box::new(MaskingNode::new(
+        "mask".to_string(),
+        size,
+        store,
+        device
+    )));
+
+    let f1 = arena.new_node(Box::new(FaderNode::new("fader1".to_string(), size, store, device)));
+    let f2 = arena.new_node(Box::new(FaderNode::new("fader2".to_string(), size, store, device)));
+
 
     /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
     let c = arena.new_node(Box::new(NodeModel::new(30, device, size)));
@@ -174,22 +176,27 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     let h = arena.new_node(Box::new(NodeModel::new(80, device, size)));*/
 
     // Build tree
-    //           a
-    //        b     c
-    //       d e    f
-    //             g h
-    /*  a.append(b, &mut arena);
-    a.append(c, &mut arena);
+    //           f1
+    //         m1     f2
+    //      c1 w2 s1    w1 s2
+ 
+    f1.append(m1, &mut arena);
+    f1.append(f2, &mut arena);
 
-    c.append(f, &mut arena);
-    f.append(g, &mut arena);
-    f.append(h, &mut arena);*/
+    m1.append(c1, &mut arena);
+    m1.append(w2, &mut arena);
+    m1.append(s1, &mut arena);
+
+    f2.append(w1, &mut arena);
+    f2.append(s2, &mut arena);
+
+
 
     //d.append(b, &mut arena);
     //d.append(c, &mut arena);
     //d.append(a, &mut arena); // stripes as mask
 
-    TextureTree::new(arena, e)
+    TextureTree::new(arena, f1)
 }
 
 // Wait for capture to finish.

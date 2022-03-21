@@ -1,35 +1,5 @@
 #version 450
 
-// Copyright Inigo Quilez, 2013 - https://iquilezles.org/
-// I am the sole copyright owner of this Work.
-// You cannot host, display, distribute or share this Work in any form,
-// including physical and digital. You cannot use this Work in any
-// commercial or non-commercial product, website or project. You cannot
-// sell this Work and you cannot mint an NFTs of it.
-// I share this Work for educational purposes, and you can link to it,
-// through an URL, proper attribution and unmodified screenshot, as part
-// of your educational material. If these conditions are too restrictive
-// please contact me and we'll definitely work it out.
-
-
-// Volumetric clouds. Not physically correct in any way - 
-// it does the wrong extintion computations and also
-// works in sRGB instead of linear RGB color space. No
-// shadows are computed, no scattering is computed. It is
-// a volumetric raymarcher than samples an fBM and tweaks
-// the colors to make it look good.
-//
-// Lighting is done with only one extra sample per raymarch
-// step instead of using 3 to compute a density gradient,
-// by using this directional derivative technique:
-//
-// https://iquilezles.org/www/articles/derivative/derivative.htm
-
-
-// 1: two 2d texture lookups with hardware interpolation
-
-
-
 // 0: no LOD
 // 1: yes LOD
 #define USE_LOD 1
@@ -210,9 +180,3 @@ void main()
     
     f_color = render( ro, rd /*, ivec2(v_pos*512-0.5)*/ );
 }
-
-/*
-void mainVR( out vec4 fragColor, in vec2 fragCoord, in vec3 fragRayOri, in vec3 fragRayDir )
-{
-    f_color = render( fragRayOri, fragRayDir, ivec2(fragCoord-0.5) );
-}*/

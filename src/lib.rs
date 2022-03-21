@@ -14,12 +14,25 @@ pub use texture_node::*;
 pub use texture_target::*;
 pub use texture_tree::*;
 
+/**
+ * Texture generators
+ */
 pub mod generators {
     pub mod circles;
     pub mod clouds;
     pub mod stripes;
     pub mod wave;
 }
+
+/**
+ * Texture combination fading and masking
+ */
+pub mod combiner {
+    pub mod fader_node;
+    pub mod masking_node;
+    pub mod shader_combiner;
+}
+
 
 pub mod util {
     pub mod ndi_stream;
@@ -29,8 +42,4 @@ pub mod util {
 pub mod program {
     pub mod program;
 }
-pub mod combiner {
-    pub mod fader_node;
-    pub mod masking_node;
-    pub mod shader_combiner;
-}
+

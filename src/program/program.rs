@@ -1,11 +1,8 @@
-/**
- * programs, 
- * 
- *  
- * 
- * 
- * 
- */
+/// Programs and how to use them
+/// 
+/// 
+/// 
+/// 
 
 use std::collections::BTreeMap;
 use nannou_osc::{Message, Type};
@@ -14,7 +11,7 @@ use crate::{Parameter, ParameterEnd, ParameterEndpoint, ParameterFactory, Parame
 pub type Interpolator = fn(f32) -> f32;
 pub type Pid = u32;
 
-// list of interpolation mappings
+/// list of interpolation mappings
 const INTERPOLATIONS : [Interpolator; 4] = [
     |x| x,                      // linear
     |x| x*x,                    // ease out // slow out hard in
@@ -22,10 +19,12 @@ const INTERPOLATIONS : [Interpolator; 4] = [
     |x| -2.0*x*x*x+ 3.0*x*x,    // slow in and slow out,s
 ];
 
-/*
- * Stores an configuration of Parameters
- * and parameters to setup interpolate between
- */
+///
+/// Stores an configuration of Parameters (Keyframe)
+/// and parameters to setup interpolate in between
+///
+/// Similar to a Keyframe in animation software
+/// 
 #[derive(Clone, Debug)]
 pub struct Program {
     delay: f32,                 // delay to fade to this program
@@ -34,7 +33,15 @@ pub struct Program {
     config:  Vec<Parameter>,    // all parameters
 }
 
+
 impl Program {
+    /// create a new Program, as a snapshot of the current state in the Parameters Store
+    /// ## Parameters
+    /// - `delay` : time in s to fade/interpolate into this program
+    /// - `inter_id` : id of the interpolation method that should be used
+    /// - `auto_next` : if set after finished interpolation automatically start the next program with this id
+    /// - `store` : [ParameterStore] to take the snapshot from
+    /// 
     pub fn new(delay:f32 , inter_id: usize, auto_next: Option<Pid>, store: &ParameterStore) -> Self {
         // default to linear interpolation on unavailable
         let inter = INTERPOLATIONS.get(inter_id).unwrap_or(&INTERPOLATIONS[0]);
@@ -117,7 +124,7 @@ impl ProgramManager {
         let interpol = factory.build_default(0,"interpol".to_string());
         let auto_next = factory.build_default(0,"auto_next".to_string());
 
-        println!("{:?}", locals );
+        println!("-- ProgramManager --  \n\r{}", locals );
 
         Self {
             programs: BTreeMap::new(),
@@ -215,6 +222,7 @@ pub trait Interpolate : Clone {
 }
 
 impl Interpolate for Type  {
+    /// linear interpolation for OSC parameters
     fn interpolation(f: f32, a: &Self, b: &Self) -> Self {
         match (a,b) {
             (Type::Int(ax), Type::Int(bx)) => Type::Int(   ((1.0-f)* (*ax) as f32 + f* (*bx) as f32 ) as i32   ),

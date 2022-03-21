@@ -6,6 +6,7 @@ use nannou::wgpu::{
 };
 use std::marker::PhantomData;
 
+/// Render something to a Texture using a SpirV Shader
 pub struct ShaderTarget<T, U> {
     bind_group: wgpu::BindGroup,
     render_pipeline: wgpu::RenderPipeline,
@@ -27,6 +28,14 @@ where
     U: Sized,
     U: Copy,
 {
+    /// Create a new ShaderTarget
+    /// ## Parameters
+    /// - `device`: render device [Device]
+    /// - `vert`: SpirV vertex shader
+    /// - `frag`: SpirV vertex shader
+    /// - `vertecies`: for the mesh that should be rendered
+    /// - `indecies`: for the mesh that should be rendered
+    /// - `uniform` : uniform data struct that is send to the shader
     pub fn new(
         device: &Device,
         texture_size: [u32; 2],
@@ -36,11 +45,15 @@ where
         indecies: &[u16],
         uniform: T,
     ) -> Self {
-        let format = Frame::TEXTURE_FORMAT;
+        // create the shaders
+        // spirv shades are compiled binary created outside this app, and could be unsafe
         let vs_mod = unsafe { device.create_shader_module_spirv(vert) };
         let fs_mod = unsafe { device.create_shader_module_spirv(frag) };
 
-        // Frame Texture
+        // output format
+        let format = Frame::TEXTURE_FORMAT;
+
+        // FrameBuffer Texture
         let texture = TextureBuilder::new()
             .size(texture_size)
             .usage(
@@ -52,6 +65,7 @@ where
             .format(format)
             .build(device);
 
+        // mesh vertex buffer
         let vertices_bytes = vertices_as_bytes(vertecies);
         let usage = wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST;
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
@@ -60,6 +74,7 @@ where
             usage,
         });
 
+        // mesh index buffer
         let indecies_bytes = indecies_as_bytes(indecies);
         let index_usage = wgpu::BufferUsages::INDEX | wgpu::BufferUsages::COPY_DST;
         let index_buffer = device.create_buffer_init(&BufferInitDescriptor {
@@ -68,6 +83,7 @@ where
             usage: index_usage,
         });
 
+        // shader uniform buffer 
         let uniforms = uniform;
         let uniforms_bytes = uniforms_as_bytes(&uniforms);
         let usage = wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST;
@@ -77,6 +93,7 @@ where
             usage,
         });
 
+        // create the bind and render layout
         let bind_group_layout = wgpu::BindGroupLayoutBuilder::new()
             .uniform_buffer(wgpu::ShaderStages::VERTEX_FRAGMENT, false)
             .build(device);
@@ -109,6 +126,8 @@ where
             marker: PhantomData,
         }
     }
+
+    /// begin a a new command encoder Queue using this shader
     pub fn begin(&mut self, device: &Device) {
         let desc = CommandEncoderDescriptor {
             label: Some("ShaderTarget"),
@@ -116,8 +135,10 @@ where
         self.encoder = Some(device.create_command_encoder(&desc));
     }
 
-    // change the uniforms_buffer
-    // must be placed between begin & submit to take effect
+    /// change the uniforms_buffer
+    /// must be placed between begin & submit to take effect
+    /// 
+    /// copies the given uniform data to the GPU
     pub fn set_uniforms(&mut self, device: &Device, uniform: T) {
         self.uniforms = uniform;
         if let Some(encoder) = self.encoder.as_mut() {
@@ -139,8 +160,10 @@ where
         }
     }
 
-    // change the mesh
-    // must be placed between begin & submit to take effect
+    /// change the mesh
+    /// must be placed between begin & submit to take effect
+    /// 
+    /// copies the given mesh data to the GPU
     pub fn set_mesh(&mut self, device: &Device, vertecies: &[U], indecies: &[u16]) {
         if let Some(encoder) = self.encoder.as_mut() {
             let vertices_bytes = vertices_as_bytes(vertecies);
@@ -179,6 +202,7 @@ where
         }
     }
 
+    /// render pass with shaders
     pub fn render_pass(&mut self) {
         if let Some(encoder) = self.encoder.as_mut() {
             let texture_view = self.texture.view().build();
@@ -196,7 +220,7 @@ where
         }
     }
 
-    // submits the comands stored since [begin()]
+    /// submits the commands stored since [begin()]
     pub fn end(&mut self, window: &Window) {
         let encoder = self.encoder.take();
 
@@ -205,10 +229,12 @@ where
         }
     }
 
+    /// get the output texture / FrameBuffer that we renderd to 
     pub fn texture_view(&self) -> TextureView {
         self.texture.view().build()
     }
 
+    /// create a snapshot of the output texture, to be transferred to the CPU
     pub fn snapshot(&self, window: &Window, texture_capturer: &TextureCapturer) -> TextueSnapshot {
         let device = window.device();
         let ce_desc = wgpu::CommandEncoderDescriptor {
@@ -246,6 +272,7 @@ where
     unsafe { wgpu::bytes::from(uniforms) }
 }
 
+// some pre-made types using simple 2D and 3D Vertex
 use crate::shapes::{Vertex2D, Vertex3D};
 pub type Shader2DTarget<T> = ShaderTarget<T, Vertex2D>;
 pub type Shader3DTarget<T> = ShaderTarget<T, Vertex3D>;
