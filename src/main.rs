@@ -8,6 +8,7 @@ use visgen_graph::generators::wave::WaveTextureNode;
 use visgen_graph::combiner::fader_node::FaderNode;
 use visgen_graph::combiner::masking_node::MaskingNode;
 use visgen_graph::generators::circles::CircleGenerator;
+use visgen_graph::generators::perlin::PerlinTextureNode;
 use visgen_graph::program::program::ProgramManager;
 use visgen_graph::{ParameterStore, TextureNode, TextureTree, TextureModelNode};
 
@@ -61,7 +62,8 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
     let window = app.window(w_id).unwrap();
-    let tree = build_tree(&window, texture_size, &mut store);
+    //let tree = build_tree(&window, texture_size, &mut store);
+    let tree = build_tree_single(&window, texture_size, &mut store);
 
     println!("{}", store);
 
@@ -197,6 +199,21 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     //d.append(a, &mut arena); // stripes as mask
 
     TextureTree::new(arena, f1)
+}
+
+fn build_tree_single(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> TextureTree {
+    let device = win.device();
+    let mut arena: Arena<Box<dyn TextureNode>> = Arena::new();
+
+
+    let g1 = arena.new_node(Box::new(PerlinTextureNode::new(
+        "clouds".to_string(),
+        size,
+        store,
+        device,
+    )));
+
+    TextureTree::new(arena, g1)
 }
 
 // Wait for capture to finish.

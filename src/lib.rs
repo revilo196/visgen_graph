@@ -22,6 +22,7 @@ pub mod generators {
     pub mod clouds;
     pub mod stripes;
     pub mod wave;
+    pub mod perlin;
 }
 
 /**
