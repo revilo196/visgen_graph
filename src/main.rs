@@ -10,6 +10,7 @@ use visgen_graph::combiner::masking_node::MaskingNode;
 use visgen_graph::generators::circles::CircleGenerator;
 use visgen_graph::generators::perlin::PerlinTextureNode;
 use visgen_graph::program::program::ProgramManager;
+use visgen_graph::effects::color_ramp::ColorRampNode;
 use visgen_graph::{ParameterStore, TextureNode, TextureTree, TextureModelNode};
 
 pub const DEFAULT_POWER_PREFERENCE: wgpu::PowerPreference = wgpu::PowerPreference::HighPerformance;
@@ -213,7 +214,15 @@ fn build_tree_single(win: &Window, size: [u32; 2], store: &mut ParameterStore) -
         device,
     )));
 
-    TextureTree::new(arena, g1)
+    let e1 = arena.new_node(Box::new(ColorRampNode::new(
+        "ramp".to_string(),
+size,
+            store,
+            device,
+    )));
+    e1.append(g1, &mut arena);
+
+    TextureTree::new(arena, e1)
 }
 
 // Wait for capture to finish.

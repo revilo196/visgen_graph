@@ -34,6 +34,9 @@ pub mod combiner {
     pub mod shader_combiner;
 }
 
+pub mod effects {
+    pub mod color_ramp;
+}
 
 pub mod util {
     pub mod ndi_stream;
