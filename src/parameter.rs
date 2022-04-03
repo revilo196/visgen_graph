@@ -6,18 +6,113 @@ use crate::osc_convert::FromOscType;
 /// # Store
 /// Parameter are stored in an central [ParameterStore]
 ///
-use nannou_osc::{Message, Type};
+use nannou_osc::{Message};
+use rosc::{OscType,OscColor,OscMidiMessage};
 use std::fmt;
 use std::{collections::BTreeMap, fmt::Debug}; // Import `fmt`
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "OscColor")]
+pub struct OscColorDef {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
+    pub alpha: u8,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "OscMidiMessage")]
+pub struct OscMidiMessageDef {
+    pub port: u8,
+    pub status: u8,
+    pub data1: u8, // maybe use an enum for data?
+    pub data2: u8,
+}
+
+#[derive(Serialize, Deserialize)]
+ enum OscTypeDef {
+        Int(i32),
+        Float(f32),
+        String(String),
+        Blob(Vec<u8>),
+        // use struct for time tag to avoid destructuring
+        Time(u32, u32),
+        Long(i64),
+        Double(f64),
+        Char(char),
+        #[serde(with = "OscColorDef")]
+        Color(OscColor),
+        #[serde(with = "OscMidiMessageDef")]
+        Midi(OscMidiMessage),
+        Bool(bool),
+        Nil,
+        Inf,
+}
+
+fn to_local_osc(osc_type: OscType) -> OscTypeDef {
+    match osc_type {
+        OscType::Int(i) => OscTypeDef::Int(i),
+        OscType::Float(f) => OscTypeDef::Float(f),
+        OscType::String(s) =>OscTypeDef::String(s),
+        OscType::Blob(b) =>OscTypeDef::Blob(b),
+        OscType::Time(i, j) => OscTypeDef::Time(i, j),
+        OscType::Long(l) =>  OscTypeDef::Long(l),
+        OscType::Double(d) => OscTypeDef::Double(d),
+        OscType::Char(c) => OscTypeDef::Char(c),
+        OscType::Color(rgba) =>  OscTypeDef::Color(rgba),
+        OscType::Midi(m) =>  OscTypeDef::Midi(m),
+        OscType::Bool(b) => OscTypeDef::Bool(b),
+        OscType::Nil => OscTypeDef::Nil,
+        OscType::Inf => OscTypeDef::Inf,
+    }
+}
+
+fn to_external_osc(osc_type: OscTypeDef) -> OscType {
+    match osc_type {
+        OscTypeDef::Int(i) => OscType::Int(i),
+        OscTypeDef::Float(f) => OscType::Float(f),
+        OscTypeDef::String(s) =>OscType::String(s),
+        OscTypeDef::Blob(b) =>OscType::Blob(b),
+        OscTypeDef::Time(i, j) => OscType::Time(i, j),
+        OscTypeDef::Long(l) =>  OscType::Long(l),
+        OscTypeDef::Double(d) => OscType::Double(d),
+        OscTypeDef::Char(c) => OscType::Char(c),
+        OscTypeDef::Color(rgba) =>  OscType::Color(rgba),
+        OscTypeDef::Midi(m) =>  OscType::Midi(m),
+        OscTypeDef::Bool(b) => OscType::Bool(b),
+        OscTypeDef::Nil => OscType::Nil,
+        OscTypeDef::Inf => OscType::Inf,
+    }
+}
+
+fn type_vec_ser<S:Serializer> (vec: &Vec<OscType>, serializer: S) -> Result<S::Ok, S::Error> {
+    // First convert the vector into a Vec<LocalColor>.
+    let vec2: Vec<OscTypeDef> = vec.clone().into_iter().map(to_local_osc).collect();
+    // Instead of serializing Vec<ExternalCrateColor>, we serialize Vec<LocalColor>.
+    vec2.serialize(serializer)
+}
+
+fn type_vec_deser<'de, D: Deserializer<'de>>(
+    deserializer: D
+) -> Result<Vec<OscType>, D::Error> {
+    // Deserialize as if it was a Vec<LocalColor>.
+    let vec: Vec<OscTypeDef> = Deserialize::deserialize(deserializer)?;
+
+    // Convert it into an Vec<ExternalCrateColor>
+    Ok(vec.into_iter().map(to_external_osc).collect())
+}
 
 /// private struct that stores:
 ///   * **value**: current value(s) of the parameter
 ///   * **address**: full osc-address of the parameter
 ///
 /// similar to [Message]
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Parameter {
-    pub(crate) values: Vec<Type>,
+    #[serde(serialize_with = "type_vec_ser")]
+    #[serde(deserialize_with = "type_vec_deser")]
+    pub(crate) values: Vec<OscType>,
     pub(crate) address: String,
 }
 
@@ -45,7 +140,7 @@ type ParameterIndex = usize;
 /// Paths are an [BTreeMap], this maps Paths to an Index into the Vec.
 ///
 /// [Parameter]s get added when creating new [ParameterEndpoint]s or using the [ParameterFactory]
-#[derive(Default, Debug)]
+#[derive(Serialize, Deserialize ,Default, Debug)]
 pub struct ParameterStore {
     parameters: Vec<Parameter>,
     paths: BTreeMap<String, ParameterIndex>,
@@ -80,14 +175,14 @@ impl ParameterStore {
     /// fast read access using [ParameterIndex]
     ///
     /// returns [None] for non existing indices
-    pub fn get_value(&self, token: ParameterIndex) -> Option<Vec<Type>> {
+    pub fn get_value(&self, token: ParameterIndex) -> Option<Vec<OscType>> {
         self.parameters.get(token).map(|f| f.values.clone())
     }
 
     /// read access using the path string
     ///
     /// returns [None] for non existing addresses
-    pub fn get_path_value(&self, path: &str) -> Option<Vec<Type>> {
+    pub fn get_path_value(&self, path: &str) -> Option<Vec<OscType>> {
         if let Some(i) = self.paths.get(path) {
             self.get_value(*i)
         } else {
@@ -105,7 +200,7 @@ impl ParameterStore {
         }
     }
 
-    pub fn set_value(&mut self, token: ParameterIndex, value: Vec<Type>) {
+    pub fn set_value(&mut self, token: ParameterIndex, value: Vec<OscType>) {
         self.parameters[token].values = value;
     }
 
