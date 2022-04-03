@@ -1,6 +1,5 @@
 /// Some Basic Shapes and Vector Formats
 
-
 /// Vertexes of a QUAD that fills the full screen
 pub const FULL_SCREEN_QUAD: [Vertex2D; 4] = [
     Vertex2D {

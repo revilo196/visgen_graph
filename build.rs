@@ -1,5 +1,4 @@
 /// build script used to pre-compile spriv shaders using glslc
-
 use std::error::Error;
 use std::fmt;
 use std::path::Path;

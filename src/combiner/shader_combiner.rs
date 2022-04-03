@@ -201,8 +201,8 @@ where
                 .buffer::<T>(&self.uniform_buffer, 0..1);
             
             //Add as many textures as Specified
-            for i in 0..self.num_input_textures {
-                bind_group_builder = bind_group_builder.texture_view(&textures[i])
+            for item in textures.iter().take(self.num_input_textures) {
+                bind_group_builder = bind_group_builder.texture_view(item)
             }
 
             let bind_group = bind_group_builder.sampler(&self.sampler)

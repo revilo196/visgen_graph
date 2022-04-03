@@ -20,9 +20,9 @@ pub use texture_tree::*;
 pub mod generators {
     pub mod circles;
     pub mod clouds;
+    pub mod perlin;
     pub mod stripes;
     pub mod wave;
-    pub mod perlin;
 }
 
 /**
@@ -46,4 +46,3 @@ pub mod util {
 pub mod program {
     pub mod program;
 }
-

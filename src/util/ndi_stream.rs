@@ -29,7 +29,7 @@ impl NdiStream
     }
 
     /// send an image buffer in the stream
-    pub fn send_image(&mut self, image: Box<ImageBuffer<Rgba<u8>, Vec<u8>>>, timecode: i64)   { 
+    pub fn send_image(&mut self, image: ImageBuffer<Rgba<u8>, Vec<u8>>, timecode: i64)   { 
 
         let width = image.width();
         let height = image.height();
@@ -49,7 +49,7 @@ impl NdiStream
     /// receives and async image_buffer and sends it in the stream
     pub fn send_video_from_queue(&mut self) {
         if let Some((img, time)) = self.queue.pop()  {
-                self.send_image(img, time); // ToDo make it possible to async this
+                self.send_image(*img, time); // ToDo make it possible to async this
         }
     }
 

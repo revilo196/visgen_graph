@@ -93,7 +93,7 @@ impl TextureNode for ColorRampNode {
         let f2 = self.param[2].get(store);
         let mode = self.mode.get(store);
 
-        let uniform = UniformsColorRamp {c0, c1, c2, f0, f1, f2, mode};
+        let uniform = UniformsColorRamp {c0, f0, c1, f1, c2, f2, mode};
 
         let device = window.device();
 

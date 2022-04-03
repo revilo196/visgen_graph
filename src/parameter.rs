@@ -7,8 +7,8 @@ use crate::osc_convert::FromOscType;
 /// Parameter are stored in an central [ParameterStore]
 ///
 use nannou_osc::{Message, Type};
-use std::{collections::BTreeMap, fmt::Debug};
-use std::fmt; // Import `fmt`
+use std::fmt;
+use std::{collections::BTreeMap, fmt::Debug}; // Import `fmt`
 
 /// private struct that stores:
 ///   * **value**: current value(s) of the parameter
@@ -118,11 +118,10 @@ impl fmt::Display for ParameterStore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for p in &self.parameters {
             let res = writeln!(f, "{}", p);
-            
-            if  res.is_err() {
+
+            if res.is_err() {
                 return res;
             }
-  
         }
         Ok(())
     }

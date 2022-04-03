@@ -83,7 +83,7 @@ where
             usage: index_usage,
         });
 
-        // shader uniform buffer 
+        // shader uniform buffer
         let uniforms = uniform;
         let uniforms_bytes = uniforms_as_bytes(&uniforms);
         let usage = wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST;
@@ -137,7 +137,7 @@ where
 
     /// change the uniforms_buffer
     /// must be placed between begin & submit to take effect
-    /// 
+    ///
     /// copies the given uniform data to the GPU
     pub fn set_uniforms(&mut self, device: &Device, uniform: T) {
         self.uniforms = uniform;
@@ -162,7 +162,7 @@ where
 
     /// change the mesh
     /// must be placed between begin & submit to take effect
-    /// 
+    ///
     /// copies the given mesh data to the GPU
     pub fn set_mesh(&mut self, device: &Device, vertecies: &[U], indecies: &[u16]) {
         if let Some(encoder) = self.encoder.as_mut() {
@@ -229,7 +229,7 @@ where
         }
     }
 
-    /// get the output texture / FrameBuffer that we renderd to 
+    /// get the output texture / FrameBuffer that we renderd to
     pub fn texture_view(&self) -> TextureView {
         self.texture.view().build()
     }

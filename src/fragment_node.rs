@@ -1,10 +1,8 @@
 /// UNUSED CODE
-
 use crate::{ParameterStore, TextureNode};
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages,
-    TextureView,
+    CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages, TextureView,
 };
 
 use ::wgpu::ShaderModuleDescriptorSpirV;

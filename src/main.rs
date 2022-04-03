@@ -2,16 +2,16 @@ use indextree::Arena;
 use nannou::prelude::*;
 use nannou_osc as osc;
 
-use visgen_graph::generators::clouds::CloudsNode;
-use visgen_graph::generators::stripes::StripeGenerator;
-use visgen_graph::generators::wave::WaveTextureNode;
 use visgen_graph::combiner::fader_node::FaderNode;
 use visgen_graph::combiner::masking_node::MaskingNode;
-use visgen_graph::generators::circles::CircleGenerator;
-use visgen_graph::generators::perlin::PerlinTextureNode;
-use visgen_graph::program::program::ProgramManager;
 use visgen_graph::effects::color_ramp::ColorRampNode;
-use visgen_graph::{ParameterStore, TextureNode, TextureTree, TextureModelNode};
+use visgen_graph::generators::circles::CircleGenerator;
+// use visgen_graph::generators::clouds::CloudsNode;
+use visgen_graph::generators::perlin::PerlinTextureNode;
+use visgen_graph::generators::stripes::StripeGenerator;
+use visgen_graph::generators::wave::WaveTextureNode;
+use visgen_graph::program::program::ProgramManager;
+use visgen_graph::{ParameterStore, TextureModelNode, TextureNode, TextureTree};
 
 pub const DEFAULT_POWER_PREFERENCE: wgpu::PowerPreference = wgpu::PowerPreference::HighPerformance;
 
@@ -42,7 +42,7 @@ fn main() {
 const PORT: u16 = 6060;
 
 fn model(app: &App) -> Model {
-    let texture_size = [512,512];
+    let texture_size = [512, 512];
     let mut store = ParameterStore::new();
 
     // to use precompiled SPIRV(GLSL) shaders without decompilation(naga)
@@ -136,11 +136,10 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
 
     // Add some new nodes to the arena
     let stripe1 = StripeGenerator::new("Stripes1".to_string(), size, store);
-    let s1 = arena.new_node(Box::new(TextureModelNode::new(stripe1,device,size)));
+    let s1 = arena.new_node(Box::new(TextureModelNode::new(stripe1, device, size)));
 
     let stripe2 = StripeGenerator::new("Stripes2".to_string(), size, store);
-    let s2 = arena.new_node(Box::new(TextureModelNode::new(stripe2,device,size)));
-
+    let s2 = arena.new_node(Box::new(TextureModelNode::new(stripe2, device, size)));
 
     let w1 = arena.new_node(Box::new(WaveTextureNode::new(
         "wave1".to_string(),
@@ -148,7 +147,6 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
         store,
         device,
     )));
-
 
     let w2 = arena.new_node(Box::new(WaveTextureNode::new(
         "wave2".to_string(),
@@ -160,16 +158,25 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     let circles = CircleGenerator::new("circles".to_string(), size, store);
     let c1 = arena.new_node(Box::new(TextureModelNode::new(circles, device, size)));
 
-    let m1 = arena.new_node( Box::new(MaskingNode::new(
+    let m1 = arena.new_node(Box::new(MaskingNode::new(
         "mask".to_string(),
         size,
         store,
-        device
+        device,
     )));
 
-    let f1 = arena.new_node(Box::new(FaderNode::new("fader1".to_string(), size, store, device)));
-    let f2 = arena.new_node(Box::new(FaderNode::new("fader2".to_string(), size, store, device)));
-
+    let f1 = arena.new_node(Box::new(FaderNode::new(
+        "fader1".to_string(),
+        size,
+        store,
+        device,
+    )));
+    let f2 = arena.new_node(Box::new(FaderNode::new(
+        "fader2".to_string(),
+        size,
+        store,
+        device,
+    )));
 
     /* let b = arena.new_node(Box::new(NodeModel::new(20, device, size)));
     let c = arena.new_node(Box::new(NodeModel::new(30, device, size)));
@@ -183,7 +190,7 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
     //           f1
     //         m1     f2
     //      c1 w2 s1    w1 s2
- 
+
     f1.append(m1, &mut arena);
     f1.append(f2, &mut arena);
 
@@ -193,8 +200,6 @@ fn build_tree(win: &Window, size: [u32; 2], store: &mut ParameterStore) -> Textu
 
     f2.append(w1, &mut arena);
     f2.append(s2, &mut arena);
-
-
 
     //d.append(b, &mut arena);
     //d.append(c, &mut arena);
@@ -207,7 +212,6 @@ fn build_tree_single(win: &Window, size: [u32; 2], store: &mut ParameterStore) -
     let device = win.device();
     let mut arena: Arena<Box<dyn TextureNode>> = Arena::new();
 
-
     let g1 = arena.new_node(Box::new(PerlinTextureNode::new(
         "clouds".to_string(),
         size,
@@ -217,9 +221,9 @@ fn build_tree_single(win: &Window, size: [u32; 2], store: &mut ParameterStore) -
 
     let e1 = arena.new_node(Box::new(ColorRampNode::new(
         "ramp".to_string(),
-size,
-            store,
-            device,
+        size,
+        store,
+        device,
     )));
     e1.append(g1, &mut arena);
 
@@ -227,17 +231,18 @@ size,
 }
 
 // ToDo FixMe Rust Panics when the programs stops
-// maybe texture capture still copying 
+// maybe texture capture still copying
 fn window_exit(a: &App, m: &mut Model) {
     if m.texture_capturer.active_snapshots() > 0 {
-        m.texture_capturer.await_active_snapshots(a.main_window().device()).expect("Failed closing snapshots");
+        m.texture_capturer
+            .await_active_snapshots(a.main_window().device())
+            .expect("Failed closing snapshots");
     }
     a.quit();
-    
 }
 
 // Wait for capture to finish.
-fn exit(app: &App, mut model: Model) {
+fn exit(_app: &App, mut model: Model) {
     model.ndi_stream.send_video_from_queue();
     // wait for NDI to finish
     println!("Done!");

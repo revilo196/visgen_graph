@@ -12,12 +12,12 @@ use nannou::{App, Draw};
 pub trait ModelUpdate {
     ///
     /// update the model and generate a output draw from the model
-    /// 
+    ///
     /// # Parameters
     /// - `app`:  nannou app
-    /// - `store`: input osc parameter 
-    /// - `input`: vector of input textures if any 
-    /// 
+    /// - `store`: input osc parameter
+    /// - `input`: vector of input textures if any
+    ///
     /// # Returns:
     /// [nannou::Draw] with the drawn frame in it
     fn update_model(&mut self, app: &App, store: &ParameterStore, input: Vec<TextureView>) -> Draw;

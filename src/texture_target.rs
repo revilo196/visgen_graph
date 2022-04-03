@@ -16,7 +16,6 @@ pub struct TextureTarget {
 }
 
 impl TextureTarget {
-
     /// Create a new Texture Target
     /// ## Parameters
     /// - `device`: [Device] to bind the texture to
@@ -45,11 +44,10 @@ impl TextureTarget {
     }
 
     /// get an texture view to the target texture.
-    /// this texture can then be used in rendering 
+    /// this texture can then be used in rendering
     pub fn texture_view(&self) -> TextureView {
         self.texture.view().build()
     }
-
 
     // create a snapshot of the texture to be exported to the CPU
     pub fn snapshot(&self, window: &Window, texture_capturer: &TextureCapturer) -> TextueSnapshot {
