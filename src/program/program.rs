@@ -4,12 +4,38 @@
 /// 
 /// 
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, error::Error, fmt::{Debug, Display}};
 use nannou_osc::{Message, Type};
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+// for file handeling
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+use rmp_serde;
 use crate::{Parameter, ParameterEnd, ParameterEndpoint, ParameterFactory, ParameterStore};
 
 pub type Interpolator = fn(f32) -> f32;
 pub type Pid = u32;
+
+#[derive(Debug)]
+pub enum LoadStoreError {
+    IoError( std::io::Error ),
+    SerializeError(rmp_serde::encode::Error),
+    DeserializeError(rmp_serde::decode::Error),
+}
+impl Display for LoadStoreError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LoadStoreError::IoError(e) => write!(f, "IoError: {}",  e),
+            LoadStoreError::SerializeError(e) => write!(f, "SerializeError: {}",  e),
+            LoadStoreError::DeserializeError(e) => write!(f, "DeserializeError: {}",  e)
+        }
+    }
+}
+
+impl Error for LoadStoreError {
+    
+}
 
 /// list of interpolation mappings
 const INTERPOLATIONS : [Interpolator; 4] = [
@@ -19,15 +45,31 @@ const INTERPOLATIONS : [Interpolator; 4] = [
     |x| -2.0*x*x*x+ 3.0*x*x,    // slow in and slow out,s
 ];
 
+fn ser_interpol <S:Serializer> (interpol: &Interpolator, serializer: S) -> Result<S::Ok, S::Error> { 
+    if let Ok(i) = INTERPOLATIONS.binary_search(interpol) {
+        serializer.serialize_u64(i as u64)
+    } else {
+        serializer.serialize_u64(0)
+    }
+}
+
+fn deser_interpol<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Interpolator, D::Error> { 
+    let u : u64 =  Deserialize::deserialize(deserializer)?;
+    if u as usize >= INTERPOLATIONS.len() { return Err(serde::de::Error::custom("invalid interpol index")) }
+    Ok(INTERPOLATIONS[u as usize])
+}
+
 ///
 /// Stores an configuration of Parameters (Keyframe)
 /// and parameters to setup interpolate in between
 ///
 /// Similar to a Keyframe in animation software
 /// 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Program {
     delay: f32,                 // delay to fade to this program
+    #[serde(serialize_with = "ser_interpol")]
+    #[serde(deserialize_with = "deser_interpol")]
     interpol: Interpolator,     // function to manipulate interpolation 
     auto_next: Option<Pid>,     // option to automatically go to next program
     config:  Vec<Parameter>,    // all parameters
@@ -199,6 +241,21 @@ impl ProgramManager {
     fn run(& mut self, p: Pid, time: f32, store: &ParameterStore) {
 
         self.current = self.programs.get(&p).map(|prg| Box::new(ProgramSwitcher::new(prg, time, store).unwrap()))
+    }
+
+    pub fn store(&self ,path: &Path) -> Result<(),LoadStoreError> {
+        let buf = rmp_serde::to_vec(&self.programs).map_err(|e|  LoadStoreError::SerializeError(e))?;
+        
+        let mut file = File::create(path).map_err(|e|  LoadStoreError::IoError(e))?;
+        file.write_all(&buf).map_err(|e|  LoadStoreError::IoError(e))
+    }
+
+    pub fn load(&mut self ,path: &Path) -> Result<(),LoadStoreError> {
+        let file = File::open(path).map_err(|e|  LoadStoreError::IoError(e))?;
+
+        let loaded_programs  = rmp_serde::from_read(file).map_err(|e|  LoadStoreError::DeserializeError(e))?;
+        self.programs = loaded_programs;
+        Ok(())
     }
 }
 
