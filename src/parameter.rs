@@ -33,7 +33,7 @@ impl Parameter {
 
 impl fmt::Display for Parameter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} : \t {:#?}", self.address, self.values)
+        write!(f, "{}", self.address)
     }
 }
 

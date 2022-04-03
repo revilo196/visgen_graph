@@ -60,6 +60,7 @@ fn model(app: &App) -> Model {
         .title("nannou")
         .device_descriptor(device_desc)
         .view(view)
+        .closed(window_exit)
         .build()
         .unwrap();
     let window = app.window(w_id).unwrap();
@@ -225,14 +226,19 @@ size,
     TextureTree::new(arena, e1)
 }
 
+// ToDo FixMe Rust Panics when the programs stops
+// maybe texture capture still copying 
+fn window_exit(a: &App, m: &mut Model) {
+    if m.texture_capturer.active_snapshots() > 0 {
+        m.texture_capturer.await_active_snapshots(a.main_window().device()).expect("Failed closing snapshots");
+    }
+    a.quit();
+    
+}
+
 // Wait for capture to finish.
-fn exit(app: &App, model: Model) {
-    println!("Waiting for PNG writing to complete...");
-    let window = app.main_window();
-    let device = window.device();
-    model
-        .texture_capturer
-        .await_active_snapshots(&device)
-        .unwrap();
+fn exit(app: &App, mut model: Model) {
+    model.ndi_stream.send_video_from_queue();
+    // wait for NDI to finish
     println!("Done!");
 }
