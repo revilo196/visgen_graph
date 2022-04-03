@@ -24,6 +24,10 @@ rand = "0.8.4"
 ndi = { git = "https://github.com/revilo196/ndi-rs.git", branch = "sending" }
 image = "0.23"
 crossbeam = "0.8"
+serde = "1.0.136"
+serde_json = "1.0"
+rmp-serde = "1.0"
+rosc = "~0.1"
 
 [workspace]
 # Required for wgpu v0.10 feature resolution.
