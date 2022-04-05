@@ -24,12 +24,33 @@ struct UniformsFade {
 
 
 /// Combining 2 textures using different parameters
+/// 
+///  # OSC Parameters used
+/// 
+/// | Endpoint              | Description                      |  Datatype    | Range    |
+/// |-----------------------|----------------------------------|--------------|----------|
+/// | `./f0`                | bias white to add added          | f32          | (0,1.0)  |
+/// | `./f1`                | factor first texture             | f32          | (0,1.0)  |
+/// | `./f2`                | factor second texture            | f32          | (0,1.0)  |
+/// | `./f1_mul_2`          | factor first MUL second          | f32          | (0,1.0)  |
+/// | `./f1_inv`            | factor inverted first texture    | f32          | (0,1.0)  |
+/// | `./f2_inv`            | factor inverted second texture   | f32          | (0,1.0)  | 
+/// | `./f1_mul_2_inv`      | combination of MUL and invert    | f32          | (0,1.0)  |
+/// | `./f1_inv_mul_2_inv`  | combination of MUL and invert    | f32          | (0,1.0)  |
+///     
+/// # Target
+/// [ShaderCombiner] is used as render target/pipeline
+/// 
+/// ## shaders used
+/// - `shader/minimal2d.vert` shared simple vertex shader
+/// - `shader/fader.frag` shader for this
 pub struct FaderNode {
     target : ShaderCombiner<UniformsFade, Vertex2D>,
     param: [ParameterEndpoint<f32> ;9],
 }
 
 impl FaderNode {
+    /// create new FaderNode
     pub fn new(name: String,texture_size : [u32;2], store : &mut ParameterStore,  device: &Device) -> Self {
     
         let vert_raw = read_shader_file("shader/minimal2d_vert.spv");

@@ -19,6 +19,19 @@ struct UniformsMasking {
 /// MaskingNode Combines 3 Textues
 /// combines 1st(a) and 2nd(b)  with 3rd(c) texture as Mask 
 /// a*c + b*(1-c)
+/// 
+/// # OSC Parameters used
+/// 
+/// | Endpoint          | Description                      |  Datatype    | Range    |
+/// |-------------------|----------------------------------|--------------|----------|
+/// | `./f0`            | bias of the mask                 | `f32`        | (0,1)    |
+/// 
+/// /// # Target
+/// [ShaderCombiner] is used as render target/pipeline
+/// 
+/// ## shaders used
+/// - `shader/minimal2d.vert` shared simple vertex shader
+/// - `shader/masking.frag` shader for this
 pub struct MaskingNode {
     target : ShaderCombiner<UniformsMasking, Vertex2D>,
     param: [ParameterEndpoint<f32> ;1],

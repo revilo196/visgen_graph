@@ -21,7 +21,30 @@ struct UniformsColorRamp {
 } 
 
 
-/// Combining 2 textures using different parameters
+/// Color Ramp textures using different parameters
+/// 
+/// Colorize an image using 3 colors - currently. 
+/// low color, mid color and high color.
+/// 
+/// ramps, mode and setpoints can be configured 
+///
+/// | Endpoint              | Description                      |  Datatype    | Range       |
+/// |-----------------------|----------------------------------|--------------|-------------|
+/// | `./c0`                | low value color                  | `[3, f32]`   | (0, 1.0)    |
+/// | `./c1`                | mid value color                  | `[3, f32]`   | (0, 1.0)    |
+/// | `./c2`                | high value color                 | `[3, f32]`   | (0, 1.0)    |
+/// | `./f0`                | low value setpoint               | `f32`        | (0,1.0)     |
+/// | `./f1`                | mid value setpoint               | `f32`        | (0,1.0)     |
+/// | `./f2`                | high value setpoint              | `f32`        | (0,1.0)     |
+/// | `./mode`              | interpolation mode               | `i32`        | (0,1,2,3,4) |
+
+/// # Target
+/// [ShaderCombiner] is used as render target/pipeline
+/// 
+/// ## shaders used
+/// - `shader/minimal2d.vert` shared simple vertex shader
+/// - `shader/color_ramp.frag` shader for this
+/// 
 pub struct ColorRampNode {
     target : ShaderCombiner<UniformsColorRamp, Vertex2D>,
     colors:  [ParameterEndpoint<f32>; 3],
