@@ -220,6 +220,27 @@ impl ProgramManager {
             }
             
         }
+
+        if msg.addr == "/program/store" {
+            if let Some(a) = &msg.args {
+                if let Some(Type::String(s)) = a.first() {
+                    if let Err(e) =  self.store(Path::new(s)) {
+                        println!("store_error: {}", e);
+                    }
+                }
+            }
+        }
+
+        if msg.addr == "/program/load" {
+            if let Some(a) = &msg.args {
+                if let Some(Type::String(s)) = a.first() {
+                    if let Err(e) =  self.load(Path::new(s)) {
+                        println!("load_error: {}", e);
+                    }
+                }
+            }
+        }
+
     }
 
     fn add(&mut self, p: Pid, store: &ParameterStore) {
@@ -247,6 +268,11 @@ impl ProgramManager {
         let buf = rmp_serde::to_vec(&self.programs).map_err(|e|  LoadStoreError::SerializeError(e))?;
         
         let mut file = File::create(path).map_err(|e|  LoadStoreError::IoError(e))?;
+        
+        //Used for debug Human Readable format
+        let  file_json = File::create(path.with_extension("json")).map_err(|e|  LoadStoreError::IoError(e))?;
+        serde_json::to_writer(file_json, &self.programs).expect("json error");
+        
         file.write_all(&buf).map_err(|e|  LoadStoreError::IoError(e))
     }
 
