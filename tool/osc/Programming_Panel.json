@@ -1,11 +1,11 @@
 {
-  "version": "1.15.1",
+  "version": "1.15.6",
   "createdWith": "Open Stage Control",
   "type": "fragment",
   "content": {
     "type": "panel",
-    "top": 630,
-    "left": 260,
+    "top": 10,
+    "left": 10,
     "lock": false,
     "id": "Programming",
     "visible": true,

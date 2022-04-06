@@ -4,8 +4,8 @@
   "type": "fragment",
   "content": {
     "type": "panel",
-    "top": 620,
-    "left": 290,
+    "top": 10,
+    "left": 10,
     "lock": false,
     "id": "wave",
     "visible": true,
