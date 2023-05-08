@@ -65,9 +65,18 @@ fn model(app: &App) -> Model {
         .unwrap();
     let window = app.window(w_id).unwrap();
     //let tree = build_tree(&window, texture_size, &mut store);
-    let tree = build_tree_single(&window, texture_size, &mut store);
+    let tree = build_tree(&window, texture_size, &mut store);
 
     println!("{}", store);
+
+    let host_info =
+        oscq_rs::OscHostInfo::new("visgen_graph".to_string(), "127.0.0.1".to_string(), PORT)
+            .with_ext_access()
+            .with_ext_value()
+            .with_ext_description();
+    let query = store.create_query(host_info);
+
+    oscq_rs::spawn_oscquery_service(query, "0.0.0.0:3030".parse().unwrap());
 
     let receiver: osc::Receiver = osc::receiver(PORT).unwrap();
     let program = ProgramManager::new();
