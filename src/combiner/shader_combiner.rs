@@ -1,19 +1,18 @@
+use ::wgpu::{ShaderModuleDescriptorSpirV, TextureSampleType};
 /// ShaderCombiner similar to [crate::shader_target::ShaderTarget] but makes it possible to add textures to the shader
 /// ToDo -- Very duplicate code to ShaderTarget
-
 use nannou::prelude::*;
 use nannou::wgpu::{
-    CommandEncoder, CommandEncoderDescriptor, Device, Texture, TextureBuilder, TextureUsages,
-    TextureView,TextueSnapshot,TextureCapturer
+    CommandEncoder, CommandEncoderDescriptor, Device, TextueSnapshot, Texture, TextureBuilder,
+    TextureCapturer, TextureUsages, TextureView,
 };
-use ::wgpu::{ShaderModuleDescriptorSpirV, TextureSampleType};
 use std::marker::PhantomData;
 
 /// ShaderCombiner similar to [crate::shader_target::ShaderTarget] but makes it possible to add textures to the shader
 /// creates a render pipeline with multiple input textures
 pub struct ShaderCombiner<T, U> {
-    bind_group_layout : wgpu::BindGroupLayout,
-    sampler : wgpu::Sampler,
+    bind_group_layout: wgpu::BindGroupLayout,
+    sampler: wgpu::Sampler,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
@@ -45,13 +44,17 @@ where
         uniform: T,
     ) -> Self {
         let format = Frame::TEXTURE_FORMAT;
-        let vs_mod = unsafe {device.create_shader_module_spirv(vert)};
-        let fs_mod = unsafe {device.create_shader_module_spirv(frag)};
+        let vs_mod = unsafe { device.create_shader_module_spirv(vert) };
+        let fs_mod = unsafe { device.create_shader_module_spirv(frag) };
 
         // Frame Texture
         let texture = TextureBuilder::new()
             .size(texture_size)
-            .usage(TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING)
+            .usage(
+                TextureUsages::RENDER_ATTACHMENT
+                    | TextureUsages::COPY_DST
+                    | TextureUsages::TEXTURE_BINDING,
+            )
             .sample_count(1)
             .format(format)
             .build(device);
@@ -91,11 +94,17 @@ where
 
         //add as many texture as specified
         for _ in 0..num_input_textures {
-            bind_group_layout_builder = bind_group_layout_builder.texture(wgpu::ShaderStages::FRAGMENT, false, wgpu::TextureViewDimension::D2,TextureSampleType::Float { filterable: true });
+            bind_group_layout_builder = bind_group_layout_builder.texture(
+                wgpu::ShaderStages::FRAGMENT,
+                false,
+                wgpu::TextureViewDimension::D2,
+                TextureSampleType::Float { filterable: true },
+            );
         }
 
-        let bind_group_layout = bind_group_layout_builder.sampler(wgpu::ShaderStages::FRAGMENT, sampler_filtering)
-        .build(device);
+        let bind_group_layout = bind_group_layout_builder
+            .sampler(wgpu::ShaderStages::FRAGMENT, sampler_filtering)
+            .build(device);
 
         let pipeline_layout =
             wgpu::create_pipeline_layout(device, None, &[&bind_group_layout], &[]);
@@ -195,19 +204,19 @@ where
         }
     }
 
-    pub fn render_pass(&mut self, device: &Device, textures : Vec<TextureView> ) {
+    pub fn render_pass(&mut self, device: &Device, textures: Vec<TextureView>) {
         if let Some(encoder) = self.encoder.as_mut() {
+            let mut bind_group_builder =
+                wgpu::BindGroupBuilder::new().buffer::<T>(&self.uniform_buffer, 0..1);
 
-            let mut bind_group_builder = wgpu::BindGroupBuilder::new()
-                .buffer::<T>(&self.uniform_buffer, 0..1);
-            
             //Add as many textures as Specified
             for item in textures.iter().take(self.num_input_textures) {
                 bind_group_builder = bind_group_builder.texture_view(item)
             }
 
-            let bind_group = bind_group_builder.sampler(&self.sampler)
-                                                        .build(device, &self.bind_group_layout);
+            let bind_group = bind_group_builder
+                .sampler(&self.sampler)
+                .build(device, &self.bind_group_layout);
 
             let texture_view = self.texture.view().build();
             let mut render_pass = wgpu::RenderPassBuilder::new()
@@ -247,11 +256,9 @@ where
         let snapshot = texture_capturer.capture(device, &mut encoder, &self.texture);
 
         window.queue().submit(Some(encoder.finish()));
-        
+
         snapshot
     }
-
-    
 }
 
 // See the `nannou::wgpu::bytes` documentation for why this is necessary.

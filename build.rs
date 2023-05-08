@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let folder_out = Path::new("shader");
 
     // Create destination path if necessary
-    std::fs::create_dir_all(&folder_out)?;
+    std::fs::create_dir_all(folder_out)?;
 
     build_shader_folder(folder, folder_out)?;
 
@@ -46,9 +46,9 @@ impl Error for CompileError {}
 fn build_shader(input: &Path, out_path: &Path) -> Result<(), Box<dyn Error>> {
     let filename = input.file_name().unwrap();
     // let extens = input.extension().unwrap();
-    let output_name = filename.to_str().unwrap().replace(".", "_") + ".spv";
+    let output_name = filename.to_str().unwrap().replace('.', "_") + ".spv";
     let output_path = out_path.join(output_name);
-    let out = Command::new(&"glslc")
+    let out = Command::new("glslc")
         .arg(input.as_os_str())
         .arg("-I")
         .arg("shader_src/include") //include folder
