@@ -18,9 +18,10 @@ path = "src/main.rs"
 indextree = "4.3.1"
 nannou = {version = "0.18.1", features = ["spirv"] }
 nannou_osc = "0.18.0"
-wgpu = { version = "0.11.1",  features = ["spirv"] }
-wgpu-types = "0.11.0"
+wgpu = { version = "0.11",  features = ["spirv"] }
+wgpu-types = "0.11"
 rand = "0.8.4"
+oscq_rs = "0.0.2"
 ndi = { git = "https://github.com/revilo196/ndi-rs.git", branch = "sending" }
 image = "0.23"
 crossbeam = "0.8"

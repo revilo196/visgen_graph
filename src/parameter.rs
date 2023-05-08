@@ -6,11 +6,11 @@ use crate::osc_convert::FromOscType;
 /// # Store
 /// Parameter are stored in an central [ParameterStore]
 ///
-use nannou_osc::{Message};
-use rosc::{OscType,OscColor,OscMidiMessage};
+use nannou_osc::Message;
+use rosc::{OscColor, OscMidiMessage, OscType};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::{collections::BTreeMap, fmt::Debug}; // Import `fmt`
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "OscColor")]
@@ -31,37 +31,37 @@ pub struct OscMidiMessageDef {
 }
 
 #[derive(Serialize, Deserialize)]
- enum OscTypeDef {
-        Int(i32),
-        Float(f32),
-        String(String),
-        Blob(Vec<u8>),
-        // use struct for time tag to avoid destructuring
-        Time(u32, u32),
-        Long(i64),
-        Double(f64),
-        Char(char),
-        #[serde(with = "OscColorDef")]
-        Color(OscColor),
-        #[serde(with = "OscMidiMessageDef")]
-        Midi(OscMidiMessage),
-        Bool(bool),
-        Nil,
-        Inf,
+enum OscTypeDef {
+    Int(i32),
+    Float(f32),
+    String(String),
+    Blob(Vec<u8>),
+    // use struct for time tag to avoid destructuring
+    Time(u32, u32),
+    Long(i64),
+    Double(f64),
+    Char(char),
+    #[serde(with = "OscColorDef")]
+    Color(OscColor),
+    #[serde(with = "OscMidiMessageDef")]
+    Midi(OscMidiMessage),
+    Bool(bool),
+    Nil,
+    Inf,
 }
 
 fn to_local_osc(osc_type: OscType) -> OscTypeDef {
     match osc_type {
         OscType::Int(i) => OscTypeDef::Int(i),
         OscType::Float(f) => OscTypeDef::Float(f),
-        OscType::String(s) =>OscTypeDef::String(s),
-        OscType::Blob(b) =>OscTypeDef::Blob(b),
+        OscType::String(s) => OscTypeDef::String(s),
+        OscType::Blob(b) => OscTypeDef::Blob(b),
         OscType::Time(i, j) => OscTypeDef::Time(i, j),
-        OscType::Long(l) =>  OscTypeDef::Long(l),
+        OscType::Long(l) => OscTypeDef::Long(l),
         OscType::Double(d) => OscTypeDef::Double(d),
         OscType::Char(c) => OscTypeDef::Char(c),
-        OscType::Color(rgba) =>  OscTypeDef::Color(rgba),
-        OscType::Midi(m) =>  OscTypeDef::Midi(m),
+        OscType::Color(rgba) => OscTypeDef::Color(rgba),
+        OscType::Midi(m) => OscTypeDef::Midi(m),
         OscType::Bool(b) => OscTypeDef::Bool(b),
         OscType::Nil => OscTypeDef::Nil,
         OscType::Inf => OscTypeDef::Inf,
@@ -72,30 +72,28 @@ fn to_external_osc(osc_type: OscTypeDef) -> OscType {
     match osc_type {
         OscTypeDef::Int(i) => OscType::Int(i),
         OscTypeDef::Float(f) => OscType::Float(f),
-        OscTypeDef::String(s) =>OscType::String(s),
-        OscTypeDef::Blob(b) =>OscType::Blob(b),
+        OscTypeDef::String(s) => OscType::String(s),
+        OscTypeDef::Blob(b) => OscType::Blob(b),
         OscTypeDef::Time(i, j) => OscType::Time(i, j),
-        OscTypeDef::Long(l) =>  OscType::Long(l),
+        OscTypeDef::Long(l) => OscType::Long(l),
         OscTypeDef::Double(d) => OscType::Double(d),
         OscTypeDef::Char(c) => OscType::Char(c),
-        OscTypeDef::Color(rgba) =>  OscType::Color(rgba),
-        OscTypeDef::Midi(m) =>  OscType::Midi(m),
+        OscTypeDef::Color(rgba) => OscType::Color(rgba),
+        OscTypeDef::Midi(m) => OscType::Midi(m),
         OscTypeDef::Bool(b) => OscType::Bool(b),
         OscTypeDef::Nil => OscType::Nil,
         OscTypeDef::Inf => OscType::Inf,
     }
 }
 
-fn type_vec_ser<S:Serializer> (vec: &Vec<OscType>, serializer: S) -> Result<S::Ok, S::Error> {
+fn type_vec_ser<S: Serializer>(vec: &Vec<OscType>, serializer: S) -> Result<S::Ok, S::Error> {
     // First convert the vector into a Vec<LocalColor>.
     let vec2: Vec<OscTypeDef> = vec.clone().into_iter().map(to_local_osc).collect();
     // Instead of serializing Vec<ExternalCrateColor>, we serialize Vec<LocalColor>.
     vec2.serialize(serializer)
 }
 
-fn type_vec_deser<'de, D: Deserializer<'de>>(
-    deserializer: D
-) -> Result<Vec<OscType>, D::Error> {
+fn type_vec_deser<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<OscType>, D::Error> {
     // Deserialize as if it was a Vec<LocalColor>.
     let vec: Vec<OscTypeDef> = Deserialize::deserialize(deserializer)?;
 
@@ -118,9 +116,9 @@ pub struct Parameter {
 
 impl Parameter {
     /// creates new Parameter with empty values and a given address.
-    pub fn new(path: String) -> Self {
+    pub fn new(path: String, values: Vec<OscType>) -> Self {
         Self {
-            values: Vec::new(),
+            values,
             address: path,
         }
     }
@@ -140,7 +138,7 @@ type ParameterIndex = usize;
 /// Paths are an [BTreeMap], this maps Paths to an Index into the Vec.
 ///
 /// [Parameter]s get added when creating new [ParameterEndpoint]s or using the [ParameterFactory]
-#[derive(Serialize, Deserialize ,Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 pub struct ParameterStore {
     parameters: Vec<Parameter>,
     paths: BTreeMap<String, ParameterIndex>,
@@ -214,9 +212,7 @@ impl fmt::Display for ParameterStore {
         for p in &self.parameters {
             let res = writeln!(f, "{}", p);
 
-            if res.is_err() {
-                return res;
-            }
+            res?;
         }
         Ok(())
     }
@@ -245,7 +241,12 @@ where
     T: Clone,
 {
     pub fn new_len(default: T, length: usize, path: String, store: &mut ParameterStore) -> Self {
-        let par = Parameter::new(path);
+        let mut values = Vec::new();
+        for _ in 0..length {
+            values.push(default.clone().into_osc());
+        }
+
+        let par = Parameter::new(path, values);
         let p_index = store.insert_parameter(par);
 
         Self {
@@ -417,5 +418,54 @@ impl<'a> From<ParameterHandle<'a, i64>> for i64 {
 impl<'a> From<ParameterHandle<'a, f64>> for f64 {
     fn from(s: ParameterHandle<'a, f64>) -> Self {
         s.parameter.get(s.store)
+    }
+}
+
+use nannou_osc::Type;
+
+impl Into<Vec<oscq_rs::OscQueryParameter>> for &Parameter {
+    fn into(self) -> Vec<oscq_rs::OscQueryParameter> {
+        let mut vec = Vec::new();
+        let addr = self.address.clone();
+        for val in self.values.clone() {
+            let conv = match val {
+                Type::Int(i) => oscq_rs::osc::OscType::Int(i),
+                Type::Float(f) => oscq_rs::osc::OscType::Float(f),
+                Type::String(s) => oscq_rs::osc::OscType::String(s),
+                Type::Blob(b) => oscq_rs::osc::OscType::Blob(b),
+                Type::Time(i, j) => oscq_rs::osc::OscType::Time(oscq_rs::osc::OscTime {
+                    seconds: i,
+                    fractional: j,
+                }),
+                Type::Long(l) => oscq_rs::osc::OscType::Long(l),
+                Type::Double(d) => oscq_rs::osc::OscType::Double(d),
+                Type::Char(c) => oscq_rs::osc::OscType::Char(c),
+                Type::Color(_r) => todo!(),
+                Type::Midi(_m) => todo!(),
+                Type::Bool(b) => oscq_rs::osc::OscType::Bool(b),
+                Type::Nil => oscq_rs::osc::OscType::Nil,
+                Type::Inf => oscq_rs::osc::OscType::Inf,
+            };
+
+            vec.push(oscq_rs::OscQueryParameter::new(addr.clone(), conv));
+        }
+
+        vec
+    }
+}
+
+impl ParameterStore {
+    pub fn create_query(&self, host_info: oscq_rs::OscHostInfo) -> oscq_rs::OSCNode {
+        let mut root = oscq_rs::OSCNode::root(Some(Box::new(host_info)));
+        //let mut root = oscq_rs::OSCNode::root(None);
+        println!("create_query with {:?}", self.parameters);
+        for par in &self.parameters {
+            let all: Vec<oscq_rs::OscQueryParameter> = par.into();
+            for p in all {
+                println!("adding into query {:?}", p);
+                root.add(p).unwrap();
+            }
+        }
+        root
     }
 }
